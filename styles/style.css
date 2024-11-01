@@ -52,7 +52,7 @@ h1, h2 {
     box-shadow: inset 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.buttons {
+.calculator-buttons {
     width: 100%;
     display: flex;
     font-size: 50px;
@@ -75,7 +75,7 @@ h1, h2 {
     flex: auto;
 }
 
-.calc-Button {
+.left-button {
     background-color: #455561;
     flex: auto;
     border-radius: 10px;
@@ -88,15 +88,15 @@ h1, h2 {
     box-shadow: 0px 5px 8px rgba(0, 0, 0, 0.2);
 }
 
-.calc-Button:hover {
+.left-button:hover {
     background-color: #5C6672;
 }
 
-.calc-Button:active {
+.left-button:active {
     transform: scale(0.95);
 }
 
-.right {
+.column {
     height: 493px;
     width: 20%;
     display: flex;

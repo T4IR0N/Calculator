@@ -15,7 +15,7 @@ const operators = {
 
     '^': { priority: 3, associativity: 'right' },
 
-    '√': { priority: 3, associativity: 'left' }
+    '√': { priority: 4, associativity: 'left' }
 };
 
 let currentNumber = ''; // текущее обрабатываемое число (буфер)

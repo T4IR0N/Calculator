@@ -1,11 +1,18 @@
-import { calculate } from "./calculator.js"; 
+import { calculate } from './calculator.js'; 
 
 // Получаем элементы DOM
 const display = document.querySelector('.display');
-const calcButtons = document.querySelectorAll('.calc-Button');
-const sideButtons = document.querySelectorAll('.side-Button');
+const calcButtons = document.querySelectorAll('.calc-button');
+// Привязываем обработчики событий
+calcButtons.forEach(button => button.addEventListener('click', () => handleCalcButtonClick(button)));
 
-const INPUT_MAX = 18; // Максимальная длина ввода
+const PI = Math.PI.toFixed(6); // Значение π
+const E = Math.E.toFixed(6); // Значение e
+const validDigits = '1234567890.'; // валидные цифры
+const validOperators = "+-*/^%"; // валидные операторы
+const unaryOperators = "√-"; // унарные операторы
+const brackets = '()' // скобки
+const maxInputLength = 18; // Максимальная длина ввода
 let currentInput = ''; // Текущее вводимое значение
 let currentExpression = ''; // Выражение для вычисления
 
@@ -14,12 +21,10 @@ const updateDisplay = (value) => {
     display.textContent = value || '0';
 }
 
-// Обработчик для кнопок с цифрами и точкой
+// Обработчик для кнопок
 const handleCalcButtonClick = (button) => {
     const value = button.textContent;
-    const PI = Math.PI.toFixed(6); // Значение π
-    const E = Math.E.toFixed(6); // Значение e
-   
+    
     // Если нажата кнопка очистки
     if (value === 'C') {
         currentInput = '';
@@ -39,38 +44,37 @@ const handleCalcButtonClick = (button) => {
     }
 
     // Проверка длины ввода
-    if (currentExpression.length >= INPUT_MAX) return;
+    if (currentExpression.length > maxInputLength) return;
 
     // Проверка на точку
     if (value === '.' && currentInput.includes(value)) return;
 
-
+    // Если нажаты кнопки числа Пи или Экспоненты
     if (value === 'π') {
         // Проверка, если последнее значение не равно значению π
-        if (!currentInput && !currentExpression.endsWith(PI)) {
-            currentInput = PI;
+        if (!currentExpression.endsWith(PI)) {
+            currentInput += PI;
             currentExpression += PI; // Добавляем значение константы
+            updateDisplay(currentExpression);
+            return
         }
     } else if (value === 'e') {
         // Проверка, если последнее значение не равно значению e
-        if (!currentInput && !currentExpression.endsWith(E)) {
-            currentInput = E;
+        if (!currentExpression.endsWith(E)) {
+            currentInput += E;
             currentExpression += E; // Добавляем значение константы
+            updateDisplay(currentExpression);
+            return
         }
-    } else {
-        currentInput += value; // Добавляем значение
-        currentExpression += value; // Добавляем значение
+    }
+ 
+    if (validDigits.includes(value) || brackets.includes(value)) {
+    currentInput += value; // Добавляем значение
+    currentExpression += value; // Добавляем значение
+    updateDisplay(currentExpression);
     }
     
-    updateDisplay(currentExpression);
-}
-
-
-// Обработчик для операторов
-const handleSideButtonClick = (button) => {
-    const value = button.textContent;
-    const validOperators = "+-*/^√%";
-    const unaryOperators = "-√"
+    // Если нажата кнопка "="
     if (value === '=') {
         if (currentExpression) {
             console.log(`Выражение для вычисления: ${currentExpression}`);
@@ -81,17 +85,24 @@ const handleSideButtonClick = (button) => {
         return;
     }
 
-    if (validOperators.includes(value) && currentInput || unaryOperators.includes(value)) {
+    // Если нажат унарный минус или унарный оператор-квадратный корень
+    if (unaryOperators.includes(value) && (!currentInput || currentExpression.endsWith("("))) {
+        currentInput += value;
         currentExpression += value;
-        currentInput = '';
         updateDisplay(currentExpression);
+        return;
     }
+
+
+    // Если нажаты бинарные операторы
+    if (validOperators.includes(value) && currentInput && !currentInput.endsWith("-")) {
+        currentInput += value;
+        currentExpression += value;
+        updateDisplay(currentExpression);
+        currentInput = '';
+        return
+    }
+
 }
-
-// Привязываем обработчики событий
-calcButtons.forEach(button => button.addEventListener('click', () => handleCalcButtonClick(button)));
-sideButtons.forEach(button => button.addEventListener('click', () => handleSideButtonClick(button)));
-
-
 
 
