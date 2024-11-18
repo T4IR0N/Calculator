@@ -1,108 +1,107 @@
-import { calculate } from './calculator.js'; 
+import Calculator from './calculator.js';
+const calculator = new Calculator();
 
-// Получаем элементы DOM
-const display = document.querySelector('.display');
-const calcButtons = document.querySelectorAll('.calc-button');
-// Привязываем обработчики событий
-calcButtons.forEach(button => button.addEventListener('click', () => handleCalcButtonClick(button)));
+class DOMcalculator {
 
-const PI = Math.PI.toFixed(6); // Значение π
-const E = Math.E.toFixed(6); // Значение e
-const validDigits = '1234567890.'; // валидные цифры
-const validOperators = "+-*/^%"; // валидные операторы
-const unaryOperators = "√-"; // унарные операторы
-const brackets = '()' // скобки
-const maxInputLength = 18; // Максимальная длина ввода
-let currentInput = ''; // Текущее вводимое значение
-let currentExpression = ''; // Выражение для вычисления
+    // Свойства класса
+    display = document.querySelector('.display');
+    calcButtons = document.querySelectorAll('.calc-button');
+    validDigits = '1234567890.'; // валидные цифры и символы
+    validOperators = "+-*/^%"; // валидные операторы
+    unaryOperators = "√-"; // унарные операторы
+    brackets = '()'; // скобки
+    maxInputLength = 18; // Максимальная длина ввода
+
+constructor() {
+    this.currentInput = ''; // Текущее вводимое значение
+    this.currentExpression = ''; // Выражение для вычисления
+    // Привязываем обработчики событий
+    this.calcButtons.forEach(button => button.addEventListener('click', () => this.handleCalcButtonClick(button))); 
+}
 
 // Функция для обновления дисплея
-const updateDisplay = (value) => {
-    display.textContent = value || '0';
+updateDisplay(value) {
+    this.display.textContent = value || '0';
 }
 
 // Обработчик для кнопок
-const handleCalcButtonClick = (button) => {
+handleCalcButtonClick(button) {
     const value = button.textContent;
+    const isDigitOrBracket = (char) => this.validDigits.includes(char) || this.brackets.includes(char)
+    const isUnaryOperator = (char) => this.unaryOperators.includes(char) && (!this.currentInput || this.currentExpression.endsWith("("))
+    const isOperator = (char) => this.validOperators.includes(char) && this.currentInput && !this.currentInput.endsWith("-")
+    const isClearAll = (char) => char === 'C'
+    const isClearEntry = (char) => char === 'Del' && this.currentExpression.length > 0
+    const isMaxInput = () => this.currentExpression.length >= this.maxInputLength
+    const isPoint = (char) => char === '.' && this.currentInput.includes(char)
+    const isPI = (char) => char === 'π' && !/\d/.test(this.currentInput)
+    const isEXP = (char) => char === 'e' && !/\d/.test(this.currentInput)
+    const isEquals = (char) => char === '='
+
+    switch (true) {
+        case isClearAll(value):
+            this.setExpression();
+            this.updateDisplay('0');
+            break;
+
+        case isClearEntry(value):
+            const slicedExpression = this.currentExpression.slice(0, -1);
+            this.setExpression(slicedExpression); // Обновляем Expression
+            this.updateDisplay(this.currentExpression || '0');
+            break;
+
+        case isMaxInput(): return;
+        case isPoint(value): break;
+
+        case isPI(value):
+            this.composeExpression(Math.PI.toFixed(6)); // Добавляем значение константы
+            this.updateDisplay(this.currentExpression);
+            break;
+        
+        case isEXP(value):
+            this.composeExpression(Math.E.toFixed(6)); // Добавляем значение константы
+            this.updateDisplay(this.currentExpression);
+            break;
+        
+        case isDigitOrBracket(value) || isUnaryOperator(value):
+            this.composeExpression(value);
+            this.updateDisplay(this.currentExpression);
+            break;
+        
+        case isEquals(value):
+            if (this.currentExpression) {
+            console.log(`Выражение для вычисления: ${this.currentExpression}`);
+            let mathResult = String(calculator.calculate(this.currentExpression));
+            this.setExpression(mathResult);
+            this.updateDisplay(this.currentExpression);
+            }
+            break;
     
-    // Если нажата кнопка очистки
-    if (value === 'C') {
-        currentInput = '';
-        currentExpression = '';
-        updateDisplay('0');
-        return;
-    }
+   /*      case isUnaryOperator(value):
+            this.composeExpression(value);
+            this.updateDisplay(this.currentExpression);
+            break; */
 
-    // Если нажата кнопка удаления символа
-    if (value === 'Del') {
-        if (currentExpression.length > 0) {
-            currentExpression = currentExpression.slice(0, -1);
-            currentInput = currentExpression; // Обновляем currentInput
-            updateDisplay(currentExpression || '0');
+        case isOperator(value):
+            this.composeExpression(value)
+            this.updateDisplay(this.currentExpression);
+            this.currentInput = '';
+            break;
         }
-        return;
-    }
+}
 
-    // Проверка длины ввода
-    if (currentExpression.length > maxInputLength) return;
+composeExpression(value) {
+    this.currentInput += value;
+    this.currentExpression += value;
+}
 
-    // Проверка на точку
-    if (value === '.' && currentInput.includes(value)) return;
-
-    // Если нажаты кнопки числа Пи или Экспоненты
-    if (value === 'π') {
-        // Проверка, если последнее значение не равно значению π
-        if (!currentExpression.endsWith(PI)) {
-            currentInput += PI;
-            currentExpression += PI; // Добавляем значение константы
-            updateDisplay(currentExpression);
-            return
-        }
-    } else if (value === 'e') {
-        // Проверка, если последнее значение не равно значению e
-        if (!currentExpression.endsWith(E)) {
-            currentInput += E;
-            currentExpression += E; // Добавляем значение константы
-            updateDisplay(currentExpression);
-            return
-        }
-    }
- 
-    if (validDigits.includes(value) || brackets.includes(value)) {
-    currentInput += value; // Добавляем значение
-    currentExpression += value; // Добавляем значение
-    updateDisplay(currentExpression);
-    }
-    
-    // Если нажата кнопка "="
-    if (value === '=') {
-        if (currentExpression) {
-            console.log(`Выражение для вычисления: ${currentExpression}`);
-            currentInput = String(calculate(currentExpression));
-            currentExpression = currentInput;
-            updateDisplay(currentInput);
-        }
-        return;
-    }
-
-    // Если нажат унарный минус или унарный оператор-квадратный корень
-    if (unaryOperators.includes(value) && (!currentInput || currentExpression.endsWith("("))) {
-        currentInput += value;
-        currentExpression += value;
-        updateDisplay(currentExpression);
-        return;
-    }
-
-
-    // Если нажаты бинарные операторы
-    if (validOperators.includes(value) && currentInput && !currentInput.endsWith("-")) {
-        currentInput += value;
-        currentExpression += value;
-        updateDisplay(currentExpression);
-        currentInput = '';
-        return
-    }
+setExpression(input = '') {
+    this.currentInput = input;
+    this.currentExpression = input;
+}
 
 }
 
 
+
+new DOMcalculator();

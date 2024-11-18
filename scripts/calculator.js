@@ -1,145 +1,155 @@
-export { calculate }
-
-const stackNumbers = [];  // стек для хранения чисел (операндов)
-const StackOperators = []; // стек для хранения операторов (например, +, -, *, /)
-const operators = {
-    '+': { priority: 1, associativity: 'left' },
-
-    '-': { priority: 1, associativity: 'left' },
-
-    '*': { priority: 2, associativity: 'left' },
-
-    '/': { priority: 2, associativity: 'left' },
-
-    '%': { priority: 2, associativity: 'left' },
-
-    '^': { priority: 3, associativity: 'right' },
-
-    '√': { priority: 4, associativity: 'left' }
-};
-
-let currentNumber = ''; // текущее обрабатываемое число (буфер)
-
+export default class Calculator {
+    constructor() {
+        this.stackNumbers = [];      // стек для хранения чисел (операндов)
+        this.stackOperators = [];    // стек для хранения операторов
+        this.currentNumber = '';     // текущее обрабатываемое число (буфер)
+        this.validOperators = {
+            '+': { precedence: 1, associativity: 'left' },
+            '-': { precedence: 1, associativity: 'left' },
+            '*': { precedence: 2, associativity: 'left' },
+            '/': { precedence: 2, associativity: 'left' },
+            '%': { precedence: 2, associativity: 'left' },
+            '^': { precedence: 3, associativity: 'right' },
+            '√': { precedence: 3, associativity: 'left' }
+        };
+    }
 
 // Основная функция калькулятора (считаем всё выражение полностью)
-function calculate(expression) {
-    
-    parseExpression(expression); // парсим и считаем выражение
-    
-    if (currentNumber) { addNumberToStack() }; // Добавляем последнее число в стек
-    console.log(`Последнее число добавлено в стек`);
-    while (StackOperators.length) { applyOperator() }; // Выполняем оставшиеся операции в стеке
-    
-    let result = stackNumbers.pop();
-    // Если число дробное, возвращаем значение с точностью до 6 знаков
-    return !Number.isInteger(result) ? parseFloat(result.toFixed(6)) : result;
-  
-}
+    calculate(expression) {
+        this.parseExpression(expression); // парсим и считаем выражение
+        if (this.currentNumber) this.addNumberToStack(); // Добавляем последнее число из буфера
+        while (this.stackOperators.length) this.applyOperator(); // Выполняем оставшиеся операции в стеке
+        let result = this.stackNumbers.pop();
+        return this.formatResult(result)
+    };
 
-
+// Если число дробное, возвращаем значение с точностью до 6 знаков, если слишком большое (больше 1e+13) с точностью до 13 знаков
+    formatResult(result) {
+        // if (!Number.isFinite(result)) return '∞';
+        return !Number.isInteger(result) ? parseFloat(result.toFixed(6)) 
+               : result > 1e+13 ? result.toPrecision(13) 
+               : result;
+    }
 
 // Токенизатор и сортировка (Функция парсинга символов в выражении и вычисления выражения с учетом приоритета операторов и скобок)
-function parseExpression(expression) { 
-    
-    let isDigit, isPoint, isOperator, isUnaryMinus,
-        isOpeningBracket, isAfterOperator, isFirstChar,
-        isClosingBracket, isMinus, isPlus, isUnaryPlus;
-
-    for (let i = 0; i < expression.length; i++) {
+    parseExpression(expression) {
         
-        const char = expression[i];
-        isDigit = /\d/.test(char);
-        isPoint = char === '.' && !(currentNumber.includes('.'));
-        isOperator = Object.hasOwn(operators, char)
-        isOpeningBracket = char === '(';
-        isClosingBracket = char === ')';
-        isMinus = char === '-';
-        isPlus = char === '+';
-        isAfterOperator = i > 0 && /[+\-*/^√(]/.test(expression[i - 1]);
-        isFirstChar = i === 0;
-        isUnaryMinus = isMinus && (!currentNumber && (isFirstChar || isAfterOperator));
-        isUnaryPlus = isPlus && (!currentNumber && isAfterOperator);
-
-        switch (true) {
-            
-            case isDigit || isPoint:
-                currentNumber += char; // Строим число
-                console.log(`Текущее число: ${currentNumber}`);
-                break;
-    
-            case isUnaryMinus || isUnaryPlus:    
-                currentNumber += char; // Унарный плюс/минус считается частью числа, поэтому продолжаем строить число
-                console.log(`Добавлен унарный оператор: ${currentNumber}`);
-                break;
-
-            case isOperator:
-                if (currentNumber) { addNumberToStack() }; // Добавляем собранное число в стек
-                processOperator(char); // применяем предыдущие операторы с большим приоритетом
-                StackOperators.push(char); // Добавляем оператор в стек операторов
-                console.log(`Оператор добавлен в стек: ${char}`);
-                break;
-    
-            case isOpeningBracket:   
-                StackOperators.push(char); // Добавляем открывающую скобку
-                console.log(`скобка добавлена в стек: ${char}`);
-                break;
-    
-            case isClosingBracket:
-                if (currentNumber) { addNumberToStack() }; // Добавляем последнее число перед закрывающейся скобкой в стек
-                while (StackOperators.length && StackOperators.at(-1) !== '(') { // пока в стеке есть операторы 
-                    applyOperator(); // Применяем операторы до открывающей скобки
-                }
-                StackOperators.pop(); // Удаляем открывающую скобку
-                break;
+        let previousChar = '';
+        const isDigit = (char) => /\d/.test(char);
+        const isPoint = (char) => char === '.' && !this.currentNumber.includes('.');
+        const isOperator = (char) => Object.hasOwn(this.validOperators, char)
+        const isBracket = (char) => char === '(' || char === ')';
+        const isUnaryOperator = (char) => (char === '-' || char === '+') &&
+                                          (!this.currentNumber && !/\d|\)/.test(previousChar  || '('));
+        
+        for (let char of expression) {
+            if (isDigit(char) || isPoint(char) || isUnaryOperator(char)) {
+                this.composeNumber(char) 
+                 console.log(`Добавлено число или унарный оператор: ${this.currentNumber}`);
+                }          
+            else if (isOperator(char)) {
+                this.addOperatorToStack(char)
+                console.log(`Оператор добавлен в стек: ${char}`)
             }
+            else if (isBracket(char)) {
+                this.manageBrackets(char) 
+                console.log(`скобка добавлена в стек: ${char}`)
+            };
+            previousChar = char;
+        }
     }
-}
 
-// Функция добавления числа в стек и очистки буфера (currentNumber)
-function addNumberToStack() {
-    stackNumbers.push(parseFloat(currentNumber))
-    currentNumber = '';    
-}
+    composeNumber(char) {
+        this.currentNumber += char // Строим число
+        console.log(`Текущее число: ${this.currentNumber}`);
+    } 
 
-function processOperator(operator) {
- 
-    while (StackOperators.length  && operators[StackOperators.at(-1)] // Проверяем что оператор в стеке существует
-        && (operators[StackOperators.at(-1)].priority > operators[operator].priority // Проверяем что приоритет оператора в стеке больше
-        || (operators[StackOperators.at(-1)].priority === operators[operator].priority // Или приоритет тот же и ассоциативность левая
-        && operators[operator].associativity === 'left'))) {
-        applyOperator(); // Применяем алгоритм вычисления
-    }
-}
+
+    addOperatorToStack(char) {
+        if (this.currentNumber) this.addNumberToStack();
+        this.evaluateOperator(char);
+        this.stackOperators.push(char);
+    };
+
+    manageBrackets(char) {
+        if (char === '(') this.stackOperators.push(char);  
+        else if (char === ')') {
+            if (this.currentNumber) this.addNumberToStack();
+            while (this.stackOperators.length && this.stackOperators.at(-1) !== '(') {
+                this.applyOperator();
+            };
+            this.stackOperators.pop();
+        }
+    };
+
+
+    addNumberToStack() {
+        this.stackNumbers.push(parseFloat(this.currentNumber));
+        this.currentNumber = '';
+    };
+
+  
+    evaluateOperator(operator) {
+        
+        const { stackOperators, validOperators } = this;
+        let operatorPrecedence = validOperators[operator].precedence;
+        let operatorAssociativity = validOperators[operator].associativity;
+              
+        while (stackOperators.length && validOperators[stackOperators.at(-1)]) {
+            let lastOperator = stackOperators.at(-1);
+            let lastOperatorPrecedence = validOperators[lastOperator].precedence;
+            let hasHigherPrecedence = lastOperatorPrecedence > operatorPrecedence;
+            let hasEqualPrecedence = lastOperatorPrecedence === operatorPrecedence && operatorAssociativity === 'left';
+
+            if (hasHigherPrecedence || hasEqualPrecedence) { 
+                this.applyOperator(); 
+            } else break;
+        }
+    };
+
+   /*  evaluateOperator(operator) {
+        
+        const { stackOperators, validOperators } = this;
+        while (stackOperators.length && validOperators[stackOperators.at(-1)] &&
+              (validOperators[stackOperators.at(-1)].precedence > validOperators[operator].precedence ||
+              (validOperators[stackOperators.at(-1)].precedence === validOperators[operator].precedence &&
+              validOperators[operator].associativity === 'left'))) {
+            this.applyOperator();
+        }
+    }; */
 
 // Функция сортировочной станции ОПЗ (вычисления выражения оператором из стека операторов и добавления полученного числа в стек чисел)
-function applyOperator() {
-    
-    let currentOperator = StackOperators.pop();
-    let rightOperand = stackNumbers.pop();
-    let leftOperand = currentOperator !== '√' ? stackNumbers.pop() : null; // √ - унарный оператор, поэтому левый оператор равен null
-    let result = performOperation(currentOperator, leftOperand, rightOperand); // проводим математическую операцию
+    applyOperator() {
+        const { stackOperators, stackNumbers } = this;
 
-    // Если текущий оператор - вовзедение в чётную степень отрицательного числа внутри скобок, то необходимо сохранить унарный минус:
-    let isExponent = currentOperator === '^' && StackOperators.at(-1) === '(' && StackOperators.at(-2) !== '√' && leftOperand < 0 && rightOperand % 2 === 0
-    if (isExponent) {
-        result  = -result;
-    }
-    console.log(`Левый операнд: ${leftOperand}, Оператор: ${currentOperator}, Правый операнд: ${rightOperand}, Результат: ${result}`);
-    stackNumbers.push(result);
-}
+        let currentOperator = stackOperators.pop();
+        let rightOperand = stackNumbers.pop();
+        let leftOperand = currentOperator !== '√' ? stackNumbers.pop() : null;
+        let result = this.performMath(currentOperator, leftOperand, rightOperand);
+
+        let ShouldKeepMinus = currentOperator === '^' &&
+                              stackOperators.at(-1) === '(' &&
+                              stackOperators.at(-2) !== '√' &&
+                              leftOperand < 0 &&
+                              rightOperand % 2 === 0;
+
+        if (ShouldKeepMinus) { result  = -result };
+        console.log(`Левый операнд: ${leftOperand}, Оператор: ${currentOperator}, Правый операнд: ${rightOperand}, Результат: ${result}`);
+        stackNumbers.push(result);
+    };
 
 // Функция для выполнения одной математической операции
-function performOperation(operator, a, b) {
-    switch (operator) {
-        case '+': return a + b;
-        case '-': return a - b;
-        case '*': return a * b;
-        case '/': return b !== 0 ? a / b : 'Error'; // Обрабатываем деление на 0
-        case '%': return a % b;
-        case '^': return Math.pow(a, b);
-        case '√': return Math.sqrt(b);
-        default: return b;
-    }
+
+    performMath(operator, a, b) {
+        switch (operator) {
+            case '+': return a + b;
+            case '-': return a - b;
+            case '*': return a * b;
+            case '/': return b !== 0 ? a / b : NaN;
+            case '%': return a % b;
+            case '^': return Math.pow(a, b);
+            case '√': return Math.sqrt(b);
+            default: return b;
+        }
+    };
 }
-
-
