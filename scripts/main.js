@@ -27,7 +27,8 @@ updateDisplay(value) {
 // Обработчик для кнопок
 handleCalcButtonClick(button) {
     const value = button.textContent;
-    const isDigitOrBracket = (char) => this.validDigits.includes(char) || this.brackets.includes(char)
+    const isDigit = (char) => this.validDigits.includes(char)
+    const isBracket = (char) => this.brackets.includes(char)
     const isUnaryOperator = (char) => this.unaryOperators.includes(char) && (!this.currentInput || this.currentExpression.endsWith("("))
     const isOperator = (char) => this.validOperators.includes(char) && this.currentInput && !this.currentInput.endsWith("-")
     const isClearAll = (char) => char === 'C'
@@ -63,9 +64,10 @@ handleCalcButtonClick(button) {
             this.updateDisplay(this.currentExpression);
             break;
         
-        case isDigitOrBracket(value) || isUnaryOperator(value):
+        case isDigit(value) || isOperator(value) || isUnaryOperator(value) || isBracket(value):
             this.composeExpression(value);
             this.updateDisplay(this.currentExpression);
+            if (isOperator(value)) this.currentInput = '';
             break;
         
         case isEquals(value):
@@ -82,11 +84,11 @@ handleCalcButtonClick(button) {
             this.updateDisplay(this.currentExpression);
             break; */
 
-        case isOperator(value):
+        /* case isOperator(value):
             this.composeExpression(value)
             this.updateDisplay(this.currentExpression);
             this.currentInput = '';
-            break;
+            break; */
         }
 }
 

@@ -10,7 +10,7 @@ export default class Calculator {
             '/': { precedence: 2, associativity: 'left' },
             '%': { precedence: 2, associativity: 'left' },
             '^': { precedence: 3, associativity: 'right' },
-            '√': { precedence: 3, associativity: 'left' }
+            '√': { precedence: 4, associativity: 'left' }
         };
     }
 
@@ -21,7 +21,7 @@ export default class Calculator {
         while (this.stackOperators.length) this.applyOperator(); // Выполняем оставшиеся операции в стеке
         let result = this.stackNumbers.pop();
         return this.formatResult(result)
-    };
+    }
 
 // Если число дробное, возвращаем значение с точностью до 6 знаков, если слишком большое (больше 1e+13) с точностью до 13 знаков
     formatResult(result) {
@@ -69,7 +69,7 @@ export default class Calculator {
         if (this.currentNumber) this.addNumberToStack();
         this.evaluateOperator(char);
         this.stackOperators.push(char);
-    };
+    }
 
     manageBrackets(char) {
         if (char === '(') this.stackOperators.push(char);  
@@ -80,32 +80,32 @@ export default class Calculator {
             };
             this.stackOperators.pop();
         }
-    };
+    }
 
 
     addNumberToStack() {
         this.stackNumbers.push(parseFloat(this.currentNumber));
         this.currentNumber = '';
-    };
+    }
 
   
     evaluateOperator(operator) {
         
         const { stackOperators, validOperators } = this;
-        let operatorPrecedence = validOperators[operator].precedence;
-        let operatorAssociativity = validOperators[operator].associativity;
+        const operatorPrecedence = validOperators[operator].precedence;
+        const operatorAssociativity = validOperators[operator].associativity;
               
         while (stackOperators.length && validOperators[stackOperators.at(-1)]) {
-            let lastOperator = stackOperators.at(-1);
-            let lastOperatorPrecedence = validOperators[lastOperator].precedence;
-            let hasHigherPrecedence = lastOperatorPrecedence > operatorPrecedence;
-            let hasEqualPrecedence = lastOperatorPrecedence === operatorPrecedence && operatorAssociativity === 'left';
+            const lastOperator = stackOperators.at(-1);
+            const lastOperatorPrecedence = validOperators[lastOperator].precedence;
+            const hasHigherPrecedence = lastOperatorPrecedence > operatorPrecedence;
+            const hasEqualPrecedence = lastOperatorPrecedence === operatorPrecedence && operatorAssociativity === 'left';
 
             if (hasHigherPrecedence || hasEqualPrecedence) { 
                 this.applyOperator(); 
             } else break;
         }
-    };
+    }
 
    /*  evaluateOperator(operator) {
         
@@ -122,12 +122,12 @@ export default class Calculator {
     applyOperator() {
         const { stackOperators, stackNumbers } = this;
 
-        let currentOperator = stackOperators.pop();
-        let rightOperand = stackNumbers.pop();
-        let leftOperand = currentOperator !== '√' ? stackNumbers.pop() : null;
+        const currentOperator = stackOperators.pop();
+        const rightOperand = stackNumbers.pop();
+        const leftOperand = currentOperator !== '√' ? stackNumbers.pop() : null;
         let result = this.performMath(currentOperator, leftOperand, rightOperand);
 
-        let ShouldKeepMinus = currentOperator === '^' &&
+        const ShouldKeepMinus = currentOperator === '^' &&
                               stackOperators.at(-1) === '(' &&
                               stackOperators.at(-2) !== '√' &&
                               leftOperand < 0 &&
@@ -136,7 +136,7 @@ export default class Calculator {
         if (ShouldKeepMinus) { result  = -result };
         console.log(`Левый операнд: ${leftOperand}, Оператор: ${currentOperator}, Правый операнд: ${rightOperand}, Результат: ${result}`);
         stackNumbers.push(result);
-    };
+    }
 
 // Функция для выполнения одной математической операции
 
@@ -151,5 +151,5 @@ export default class Calculator {
             case '√': return Math.sqrt(b);
             default: return b;
         }
-    };
+    }
 }
