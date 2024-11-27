@@ -3,7 +3,7 @@ const calculator = new Calculator();
 
 class DOMcalculator {
 
-    // Свойства класса
+    // Свойства класса (константы)
     display = document.querySelector('.display');
     calcButtons = document.querySelectorAll('.calc-button');
     validDigits = '1234567890.'; // валидные цифры и символы
@@ -12,32 +12,56 @@ class DOMcalculator {
     brackets = '()'; // скобки
     maxInputLength = 18; // Максимальная длина ввода
 
+
 constructor() {
     this.currentInput = ''; // Текущее вводимое значение
     this.currentExpression = ''; // Выражение для вычисления
+    this.isKeydownListenerActive = false
     // Привязываем обработчики событий
-    this.calcButtons.forEach(button => button.addEventListener('click', () => this.handleCalcButtonClick(button))); 
+    this.calcButtons.forEach(button => this.addButtonClickListener(button));
+    this.display.addEventListener('click', () => this.toggleKeydownListener())
 }
+
+// Обработчики событий
+addButtonClickListener(button) {
+    button.addEventListener('click', (event) => this.handleCalcButtonClick(event.target.textContent))
+}
+
+handleKeydownEvent = (event) => {
+    this.handleCalcButtonClick(event.key);
+};
+
+toggleKeydownListener() {
+    if (!this.isKeydownListenerActive) {
+        document.addEventListener('keydown', this.handleKeydownEvent); 
+    } else {
+        document.removeEventListener('keydown', this.handleKeydownEvent);
+    }
+    this.isKeydownListenerActive = !this.isKeydownListenerActive; // Переключаем состояние
+}
+
+
 
 // Функция для обновления дисплея
 updateDisplay(value) {
     this.display.textContent = value || '0';
 }
 
-// Обработчик для кнопок
-handleCalcButtonClick(button) {
-    const value = button.textContent;
-    const isDigit = (char) => this.validDigits.includes(char)
-    const isBracket = (char) => this.brackets.includes(char)
-    const isUnaryOperator = (char) => this.unaryOperators.includes(char) && (!this.currentInput || this.currentExpression.endsWith("("))
-    const isOperator = (char) => this.validOperators.includes(char) && this.currentInput && !this.currentInput.endsWith("-")
-    const isClearAll = (char) => char === 'C'
-    const isClearEntry = (char) => char === 'Del' && this.currentExpression.length > 0
-    const isMaxInput = () => this.currentExpression.length >= this.maxInputLength
-    const isPoint = (char) => char === '.' && this.currentInput.includes(char)
-    const isPI = (char) => char === 'π' && !/\d/.test(this.currentInput)
-    const isEXP = (char) => char === 'e' && !/\d/.test(this.currentInput)
-    const isEquals = (char) => char === '='
+// Обработчик значений кнопки
+handleCalcButtonClick(value) {
+    
+
+    const isDigit = (char) => this.validDigits.includes(char);
+    const isBracket = (char) => this.brackets.includes(char);
+    const isUnaryOperator = (char) => this.unaryOperators.includes(char) && (!this.currentInput || this.currentExpression.endsWith("("));
+    const isOperator = (char) => this.validOperators.includes(char) && this.currentInput && !this.currentInput.endsWith("-");
+    const isClearAll = (char) => char === 'C' || char === 'Delete';
+    const isClearEntry = (char) => (char === 'Del' || char === "Backspace") && this.currentExpression.length > 0;
+    const isMaxInput = () => this.currentExpression.length >= this.maxInputLength;
+    const isPoint = (char) => char === '.' && this.currentInput.includes(char);
+    const isPI = (char) => char === 'π' && !/\d/.test(this.currentInput);
+    const isEXP = (char) => char === 'e' && !/\d/.test(this.currentInput);
+    const isEquals = (char) => char === '=' || char ==='Enter';
 
     switch (true) {
         case isClearAll(value):
