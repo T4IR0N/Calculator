@@ -95,17 +95,13 @@ export default class Calculator {
         
         const { stackOperators, validOperators } = this;
         const operatorPrecedence = validOperators[operator].precedence;
-        const operatorAssociativity = validOperators[operator].associativity;
               
         while (stackOperators.length && validOperators[stackOperators.at(-1)]) {
             const lastOperator = stackOperators.at(-1);
             const lastOperatorPrecedence = validOperators[lastOperator].precedence;
-            const hasHigherPrecedence = lastOperatorPrecedence > operatorPrecedence;
-            const hasEqualPrecedence = lastOperatorPrecedence === operatorPrecedence && operatorAssociativity === 'left';
-
-            if (hasHigherPrecedence || hasEqualPrecedence) { 
-                this.applyOperator(); 
-            } else break;
+            const hasHigherOrEqualPrecedence = lastOperatorPrecedence >= operatorPrecedence;
+            if (hasHigherOrEqualPrecedence) this.applyOperator()
+            else break;
         }
     }
 
