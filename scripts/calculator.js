@@ -1,17 +1,19 @@
 export default class Calculator {
+    
+    validOperators = {
+        '+': { precedence: 1, associativity: 'left' },
+        '-': { precedence: 1, associativity: 'left' },
+        '*': { precedence: 2, associativity: 'left' },
+        '/': { precedence: 2, associativity: 'left' },
+        '%': { precedence: 2, associativity: 'left' },
+        '^': { precedence: 3, associativity: 'right' },
+        '√': { precedence: 4, associativity: 'left' }
+    };
+
     constructor() {
         this.stackNumbers = [];      // стек для хранения чисел (операндов)
         this.stackOperators = [];    // стек для хранения операторов
         this.currentNumber = '';     // текущее обрабатываемое число (буфер)
-        this.validOperators = {
-            '+': { precedence: 1, associativity: 'left' },
-            '-': { precedence: 1, associativity: 'left' },
-            '*': { precedence: 2, associativity: 'left' },
-            '/': { precedence: 2, associativity: 'left' },
-            '%': { precedence: 2, associativity: 'left' },
-            '^': { precedence: 3, associativity: 'right' },
-            '√': { precedence: 4, associativity: 'left' }
-        };
     }
 
 // Основная функция калькулятора (считаем всё выражение полностью)
