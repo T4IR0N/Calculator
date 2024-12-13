@@ -69,7 +69,7 @@ export default class Calculator {
 
     addOperatorToStack(char) {
         if (this.currentNumber) this.addNumberToStack();
-        this.evaluateOperator(char);
+        this.processOperatorPrecedence(char);
         this.stackOperators.push(char);
     }
 
@@ -91,16 +91,22 @@ export default class Calculator {
     }
 
   
-    evaluateOperator(operator) {
+    processOperatorPrecedence(operator) {
         
         const { stackOperators, validOperators } = this;
+        
         const operatorPrecedence = validOperators[operator].precedence;
-              
-        while (stackOperators.length && validOperators[stackOperators.at(-1)]) {
+        const isRightAssociative = validOperators[operator].associativity === 'right';
+
+        while (stackOperators.length) {
             const lastOperator = stackOperators.at(-1);
+            if (!validOperators[lastOperator]) break;
             const lastOperatorPrecedence = validOperators[lastOperator].precedence;
-            const hasHigherOrEqualPrecedence = lastOperatorPrecedence >= operatorPrecedence;
-            if (hasHigherOrEqualPrecedence) this.applyOperator()
+            
+            const shouldApplyLastOperator = isRightAssociative ? lastOperatorPrecedence > operatorPrecedence
+                                                               : lastOperatorPrecedence >= operatorPrecedence;
+            
+            if (shouldApplyLastOperator) this.applyOperator()
             else break;
         }
     }
