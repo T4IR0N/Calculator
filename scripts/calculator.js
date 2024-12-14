@@ -25,11 +25,11 @@ export default class Calculator {
         return this.formatResult(result)
     }
 
-// Если число дробное, возвращаем значение с точностью до 6 знаков, если слишком большое (больше 1e+13) с точностью до 13 знаков
+// Если число дробное, возвращаем значение с точностью до 6 знаков, если слишком большое или маленькое с точностью до 13 знаков
     formatResult(result) {
-        // if (!Number.isFinite(result)) return '∞';
-        return !Number.isInteger(result) ? parseFloat(result.toFixed(6)) 
-               : result > 1e+13 ? result.toPrecision(13) 
+        return !Number.isFinite(result) ? '∞'
+               : !Number.isInteger(result) ? parseFloat(result.toFixed(6)) 
+               : result > 1e+13 || result < -1e+13 ? result.toPrecision(13)
                : result;
     }
 
