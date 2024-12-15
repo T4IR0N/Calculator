@@ -4,8 +4,7 @@ const calculator = new Calculator();
 class CalculatorUI {
 
     // Свойства класса (константы)
-    display = document.querySelector('.display');
-    calcButtons = document.querySelectorAll('.calc-button');
+    
     validDigits = '1234567890.'; // валидные цифры и символы
     validOperators = "+-*/^%"; // валидные операторы
     unaryOperators = "√-"; // унарные операторы
@@ -14,6 +13,8 @@ class CalculatorUI {
 
 
 constructor() {
+    this.display = document.querySelector('.display');
+    this.calcButtons = document.querySelectorAll('.calc-button');
     this.currentInput = ''; // Текущее вводимое значение
     this.currentExpression = ''; // Выражение для вычисления
     this.isKeydownListenerActive = false
