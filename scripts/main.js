@@ -1,7 +1,7 @@
 import Calculator from './calculator.js';
 const calculator = new Calculator();
 
-class DOMcalculator {
+class CalculatorUI {
 
     // Свойства класса (константы)
     display = document.querySelector('.display');
@@ -128,6 +128,4 @@ setExpression(input = '') {
 
 }
 
-
-
-new DOMcalculator();
+new CalculatorUI();
