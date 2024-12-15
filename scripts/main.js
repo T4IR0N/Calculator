@@ -3,25 +3,24 @@ const calculator = new Calculator();
 
 class CalculatorUI {
 
-    // Свойства класса (константы)
-    
-    validDigits = '1234567890.'; // валидные цифры и символы
-    validOperators = "+-*/^%"; // валидные операторы
-    unaryOperators = "√-"; // унарные операторы
-    brackets = '()'; // скобки
-    maxInputLength = 18; // Максимальная длина ввода
+    // Свойства класса (константы) 
+    static validDigits = '1234567890.'; // валидные цифры и символы
+    static validOperators = "+-*/^%"; // валидные операторы
+    static unaryOperators = "√-"; // унарные операторы
+    static brackets = '()'; // скобки
+    static maxInputLength = 18; // Максимальная длина ввода
 
 
-constructor() {
-    this.display = document.querySelector('.display');
-    this.calcButtons = document.querySelectorAll('.calc-button');
-    this.currentInput = ''; // Текущее вводимое значение
-    this.currentExpression = ''; // Выражение для вычисления
-    this.isKeydownListenerActive = false
-    // Привязываем обработчики событий
-    this.calcButtons.forEach(button => this.addButtonClickListener(button));
-    this.display.addEventListener('click', () => this.toggleKeydownListener())
-}
+    constructor() {
+        this.display = document.querySelector('.display');
+        this.calcButtons = document.querySelectorAll('.calc-button');
+        this.currentInput = ''; // Текущее вводимое значение
+        this.currentExpression = ''; // Выражение для вычисления
+        this.isKeydownListenerActive = false
+        // Привязываем обработчики событий
+        this.calcButtons.forEach(button => this.addButtonClickListener(button));
+        this.display.addEventListener('click', () => this.toggleKeydownListener())
+    }
 
 // Обработчики событий
 addButtonClickListener(button) {
@@ -52,13 +51,13 @@ updateDisplay(value) {
 handleCalcButtonClick(value) {
     
 
-    const isDigit = (char) => this.validDigits.includes(char);
-    const isBracket = (char) => this.brackets.includes(char);
-    const isUnaryOperator = (char) => this.unaryOperators.includes(char) && (!this.currentInput || this.currentExpression.endsWith("("));
-    const isOperator = (char) => this.validOperators.includes(char) && this.currentInput && !this.currentInput.endsWith("-");
+    const isDigit = (char) => CalculatorUI.validDigits.includes(char);
+    const isBracket = (char) => CalculatorUI.brackets.includes(char);
+    const isUnaryOperator = (char) => CalculatorUI.unaryOperators.includes(char) && (!this.currentInput || this.currentExpression.endsWith("("));
+    const isOperator = (char) => CalculatorUI.validOperators.includes(char) && this.currentInput && !this.currentInput.endsWith("-");
     const isClearAll = (char) => char === 'C' || char === 'Delete';
     const isClearEntry = (char) => (char === 'Del' || char === "Backspace") && this.currentExpression.length > 0;
-    const isMaxInput = () => this.currentExpression.length >= this.maxInputLength;
+    const isMaxInput = () => this.currentExpression.length >= CalculatorUI.maxInputLength;
     const isPoint = (char) => char === '.' && this.currentInput.includes(char);
     const isPI = (char) => char === 'π' && !/\d/.test(this.currentInput);
     const isEXP = (char) => char === 'e' && !/\d/.test(this.currentInput);
