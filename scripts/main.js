@@ -58,7 +58,7 @@ handleCalcButtonClick(value) {
     const isClearAll = (char) => char === 'C' || char === 'Delete';
     const isClearEntry = (char) => (char === 'Del' || char === "Backspace") && this.currentExpression.length > 0;
     const isMaxInput = () => this.currentExpression.length > CalculatorUI.maxInputLength;
-    const isPoint = (char) => char === '.' && this.currentInput.includes(char);
+    const isSecondPoint = (char) => char === '.' && this.currentInput.includes(char);
     const isPI = (char) => char === 'π' && !/[\dπe]$/.test(this.currentInput);
     const isEXP = (char) => char === 'e' && !/[\dπe]$/.test(this.currentInput);
     const isEquals = (char) => char === '=' || char ==='Enter';
@@ -77,7 +77,7 @@ handleCalcButtonClick(value) {
 
         case isMaxInput(): return;
 
-        case isPoint(value): break;
+        case isSecondPoint(value): break;
    
         case isDigit(value):
         case isOperator(value):
