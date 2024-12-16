@@ -61,8 +61,8 @@ handleCalcButtonClick(value) {
     const isClearEntry = (char) => (char === 'Del' || char === "Backspace") && this.currentExpression.length > 0;
     const isMaxInput = () => this.currentExpression.length >= CalculatorUI.maxInputLength;
     const isPoint = (char) => char === '.' && this.currentInput.includes(char);
-    const isPI = (char) => char === 'π' && !/\d/.test(this.currentInput);
-    const isEXP = (char) => char === 'e' && !/\d/.test(this.currentInput);
+    const isPI = (char) => char === 'π' && !/[\dπe]$/.test(this.currentInput);
+    const isEXP = (char) => char === 'e' && !/[\dπe]$/.test(this.currentInput);
     const isEquals = (char) => char === '=' || char ==='Enter';
 
     switch (true) {
@@ -81,12 +81,12 @@ handleCalcButtonClick(value) {
         case isPoint(value): break;
 
         case isPI(value):
-            this.composeExpression(Math.PI.toFixed(6)); // Добавляем значение константы
+            this.composeExpression(value); // Добавляем значение константы
             this.updateDisplay(this.currentExpression);
             break;
         
         case isEXP(value):
-            this.composeExpression(Math.E.toFixed(6)); // Добавляем значение константы
+            this.composeExpression(value); // Добавляем значение константы
             this.updateDisplay(this.currentExpression);
             break;
         
