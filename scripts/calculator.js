@@ -41,11 +41,12 @@ export default class Calculator {
         const isPoint = (char) => char === '.' && !this.currentNumber.includes('.');
         const isOperator = (char) => Object.hasOwn(this.validOperators, char)
         const isBracket = (char) => char === '(' || char === ')';
+        const isConstant = (char) => char === 'π' || char === 'e';
         const isUnaryOperator = (char) => (char === '-' || char === '+') &&
                                           (!this.currentNumber && !/\d|\)/.test(previousChar  || '('));
         
         for (let char of expression) {
-            if (isDigit(char) || isPoint(char) || isUnaryOperator(char)) {
+            if (isDigit(char) || isPoint(char) || isConstant(char) || isUnaryOperator(char)) {
                 this.composeNumber(char) 
                  console.log(`Добавлено число или унарный оператор: ${this.currentNumber}`);
                 }          
@@ -62,6 +63,8 @@ export default class Calculator {
     }
 
     composeNumber(char) {
+        if (char === 'π') char = Math.PI;
+        if (char === 'e') char = Math.E;
         this.currentNumber += char // Строим число
         console.log(`Текущее число: ${this.currentNumber}`);
     } 
