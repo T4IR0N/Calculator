@@ -7,8 +7,6 @@ class CalculatorUI {
     static validDigits = '1234567890.'; // валидные цифры и символы
     static validOperators = "+-*/^%"; // валидные операторы
     static unaryOperators = "√-"; // унарные операторы
-    static PI = Math.PI.toFixed(6);
-    static EXP = Math.E.toFixed(6);
     static brackets = '()'; // скобки
     static maxInputLength = 18; // Максимальная длина ввода
     
