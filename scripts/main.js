@@ -78,19 +78,16 @@ handleCalcButtonClick(value) {
             break;
 
         case isMaxInput(): return;
-        case isPoint(value): break;
 
+        case isPoint(value): break;
+   
+        case isDigit(value):
+        case isOperator(value):
+        case isUnaryOperator(value):
         case isPI(value):
-            this.composeExpression(value); // Добавляем значение константы
-            this.updateDisplay(this.currentExpression);
-            break;
-        
         case isEXP(value):
-            this.composeExpression(value); // Добавляем значение константы
-            this.updateDisplay(this.currentExpression);
-            break;
-        
-        case isDigit(value) || isOperator(value) || isUnaryOperator(value) || isBracket(value):
+        case isBracket(value):
+
             this.composeExpression(value);
             this.updateDisplay(this.currentExpression);
             if (isOperator(value)) this.currentInput = '';
