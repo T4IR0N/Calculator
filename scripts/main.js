@@ -49,12 +49,16 @@ updateDisplay(value) {
 
 // Обработчик значений кнопки
 handleCalcButtonClick(value) {
-    
 
     const isDigit = (char) => CalculatorUI.validDigits.includes(char);
     const isBracket = (char) => CalculatorUI.brackets.includes(char);
-    const isUnaryOperator = (char) => CalculatorUI.unaryOperators.includes(char) && (!this.currentInput || this.currentExpression.endsWith("("));
-    const isOperator = (char) => CalculatorUI.validOperators.includes(char) && this.currentInput && !this.currentInput.endsWith("-");
+
+    const isUnaryOperator = (char) => CalculatorUI.unaryOperators.includes(char) &&
+                                      (!this.currentInput || this.currentExpression.endsWith("("));
+
+    const isOperator = (char) => CalculatorUI.validOperators.includes(char) &&
+                                 this.currentInput && !this.currentInput.endsWith("-");
+    
     const isClearAll = (char) => char === 'C' || char === 'Delete';
     const isClearEntry = (char) => (char === 'Del' || char === "Backspace") && this.currentExpression.length > 0;
     const isMaxInput = () => this.currentExpression.length > CalculatorUI.maxInputLength;
@@ -85,10 +89,10 @@ handleCalcButtonClick(value) {
         case isPI(value):
         case isEXP(value):
         case isBracket(value):
-
+            
+            if (isOperator(value)) this.currentInput = '';
             this.composeExpression(value);
             this.updateDisplay(this.currentExpression);
-            if (isOperator(value)) this.currentInput = '';
             break;
         
         case isEquals(value):
@@ -99,18 +103,8 @@ handleCalcButtonClick(value) {
             this.updateDisplay(this.currentExpression);
             }
             break;
-    
-   /*      case isUnaryOperator(value):
-            this.composeExpression(value);
-            this.updateDisplay(this.currentExpression);
-            break; */
 
-        /* case isOperator(value):
-            this.composeExpression(value)
-            this.updateDisplay(this.currentExpression);
-            this.currentInput = '';
-            break; */
-        }
+    }
 }
 
 composeExpression(value) {
