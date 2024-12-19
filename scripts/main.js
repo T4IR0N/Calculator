@@ -74,8 +74,7 @@ handleCalcButtonClick(value) {
             break;
 
         case isClearEntry(value):
-            const slicedExpression = this.currentExpression.slice(0, -1);
-            this.setExpression(slicedExpression); // Обновляем Expression
+            this.setExpression(this.currentExpression.slice(0, -1)); // Обновляем Expression
             this.updateDisplay(this.currentExpression || '0');
             break;
 
