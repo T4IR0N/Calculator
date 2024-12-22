@@ -19,7 +19,7 @@ export default class Calculator {
 // Основная функция калькулятора (считаем всё выражение полностью)
     calculate(expression) {
         this.parseExpression(expression); // парсим и считаем выражение
-        if (this.currentNumber) this.addNumberToStack(); // Добавляем последнее число из буфера
+        this.pushNumberToStack(); // Добавляем последнее число из буфера
         while (this.stackOperators.length) this.applyOperator(); // Выполняем оставшиеся операции в стеке
         let result = this.stackNumbers.pop();
         return this.formatResult(result)
@@ -40,7 +40,8 @@ export default class Calculator {
         const isDigit = (char) => /\d/.test(char);
         const isPoint = (char) => char === '.' && !this.currentNumber.includes('.');
         const isOperator = (char) => Object.hasOwn(this.validOperators, char)
-        const isBracket = (char) => char === '(' || char === ')';
+        const isOpeningParenthesis = (char) => char === '(';
+        const isClosingParenthesis = (char) => char === ')';
         const isConstant = (char) => char === 'π' || char === 'e';
         const isUnaryOperator = (char) => (char === '-' || char === '+') &&
                                           (!this.currentNumber && !/\d|\)/.test(previousChar  || '('));
@@ -51,12 +52,20 @@ export default class Calculator {
                  console.log(`Добавлено число или унарный оператор: ${this.currentNumber}`);
                 }          
             else if (isOperator(char)) {
-                this.addOperatorToStack(char)
+                this.pushNumberToStack();
+                this.processOperatorPrecedence(char);
+                this.pushOperatorToStack(char)
                 console.log(`Оператор добавлен в стек: ${char}`)
             }
-            else if (isBracket(char)) {
-                this.manageBrackets(char) 
-                console.log(`скобка добавлена в стек: ${char}`)
+            
+            else if (isOpeningParenthesis(char)) {
+                this.pushOperatorToStack(char)
+            }
+
+            else if (isClosingParenthesis(char)) {
+                this.pushNumberToStack()
+                this.resolveParentheses() 
+                console.log(`выражение перед: ${char} было посчитано до открывающей скобки`)
             };
             previousChar = char;
         }
@@ -70,27 +79,28 @@ export default class Calculator {
     } 
 
 
-    addOperatorToStack(char) {
-        if (this.currentNumber) this.addNumberToStack();
-        this.processOperatorPrecedence(char);
-        this.stackOperators.push(char);
+    pushOperatorToStack(operator) { 
+        this.stackOperators.push(operator)
     }
+    
 
-    manageBrackets(char) {
-        if (char === '(') this.stackOperators.push(char);  
-        else if (char === ')') {
-            if (this.currentNumber) this.addNumberToStack();
-            while (this.stackOperators.length && this.stackOperators.at(-1) !== '(') {
+    resolveParentheses() { 
+            while (
+                this.stackOperators.length &&
+                this.stackOperators.at(-1) !== '('
+            ) {
                 this.applyOperator();
-            };
-            this.stackOperators.pop();
-        }
+            }
+    
+            this.stackOperators.pop();   
     }
 
 
-    addNumberToStack() {
-        this.stackNumbers.push(parseFloat(this.currentNumber));
-        this.currentNumber = '';
+    pushNumberToStack() {
+        if (this.currentNumber) {
+            this.stackNumbers.push(parseFloat(this.currentNumber));
+            this.currentNumber = '';
+        }
     }
 
   
