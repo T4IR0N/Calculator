@@ -27,16 +27,19 @@ export default class Calculator {
 
 // Если число дробное, возвращаем значение с точностью до 6 знаков, если слишком большое или маленькое с точностью до 13 знаков
     formatResult(result) {
-        return !Number.isFinite(result) ? '∞'
-               : !Number.isInteger(result) ? parseFloat(result.toFixed(6)) 
-               : result > 1e+13 || result < -1e+13 ? result.toPrecision(13)
-               : result;
+
+        if (!Number.isFinite(result)) return '∞';
+        if (!Number.isInteger(result)) {
+            result = this.round(result, 6);
+        }
+        return result > 1e+13 ||
+               result < -1e+13 ? 
+               result.toPrecision(13) : result;
     }
 
 // Токенизатор и сортировка (Функция парсинга символов в выражении и вычисления выражения с учетом приоритета операторов и скобок)
     parseExpression(expression) {
         
-        let previousChar = '';
         const isDigit = (char) => /\d/.test(char);
         const isPoint = (char) => char === '.' && !this.currentNumber.includes('.');
         const isOperator = (char) => Object.hasOwn(this.validOperators, char)
@@ -44,7 +47,9 @@ export default class Calculator {
         const isClosingParenthesis = (char) => char === ')';
         const isConstant = (char) => char === 'π' || char === 'e';
         const isUnaryOperator = (char) => (char === '-' || char === '+') &&
-                                          (!this.currentNumber && !/\d|\)/.test(previousChar  || '('));
+                                          (this.currentNumber === '' &&
+                                          (this.stackOperators.length === 0 || 
+                                          isOpeningParenthesis(this.stackOperators[this.stackOperators.length - 1])));
         
         for (let char of expression) {
             if (isDigit(char) || isPoint(char) || isConstant(char) || isUnaryOperator(char)) {
@@ -67,7 +72,6 @@ export default class Calculator {
                 this.resolveParentheses() 
                 console.log(`выражение перед: ${char} было посчитано до открывающей скобки`)
             };
-            previousChar = char;
         }
     }
 
@@ -124,17 +128,6 @@ export default class Calculator {
         }
     }
 
-   /*  evaluateOperator(operator) {
-        
-        const { stackOperators, validOperators } = this;
-        while (stackOperators.length && validOperators[stackOperators.at(-1)] &&
-              (validOperators[stackOperators.at(-1)].precedence > validOperators[operator].precedence ||
-              (validOperators[stackOperators.at(-1)].precedence === validOperators[operator].precedence &&
-              validOperators[operator].associativity === 'left'))) {
-            this.applyOperator();
-        }
-    }; */
-
 // Функция сортировочной станции ОПЗ (вычисления выражения оператором из стека операторов и добавления полученного числа в стек чисел)
     applyOperator() {
         const { stackOperators, stackNumbers } = this;
@@ -155,17 +148,22 @@ export default class Calculator {
         stackNumbers.push(result);
     }
 
+    round(number, decimals = 6) {
+        const factor = Math.pow(10, decimals);
+        return Math.round(number * factor) / factor;
+    }
+
 // Функция для выполнения одной математической операции
 
     performMath(operator, a, b) {
         switch (operator) {
-            case '+': return a + b;
-            case '-': return a - b;
-            case '*': return a * b;
-            case '/': return b !== 0 ? a / b : NaN;
-            case '%': return a % b;
-            case '^': return Math.pow(a, b);
-            case '√': return Math.sqrt(b);
+            case '+': return this.round(a + b);
+            case '-': return this.round(a - b);
+            case '*': return this.round(a * b);
+            case '/': return b !== 0 ? this.round(a / b) : NaN;
+            case '%': return this.round(a % b);
+            case '^': return this.round(Math.pow(a, b));
+            case '√': return this.round(Math.sqrt(b));
             default: return b;
         }
     }
