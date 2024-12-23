@@ -1,13 +1,18 @@
 export default class Calculator {
     
     validOperators = {
-        '+': { precedence: 1, associativity: 'left' },
-        '-': { precedence: 1, associativity: 'left' },
-        '*': { precedence: 2, associativity: 'left' },
-        '/': { precedence: 2, associativity: 'left' },
-        '%': { precedence: 2, associativity: 'left' },
-        '^': { precedence: 3, associativity: 'right' },
-        '√': { precedence: 4, associativity: 'left' }
+        '+':   { precedence: 1, associativity: 'left' },
+        '-':   { precedence: 1, associativity: 'left' },
+        '*':   { precedence: 2, associativity: 'left' },
+        '/':   { precedence: 2, associativity: 'left' },
+        '%':   { precedence: 2, associativity: 'left' },
+        '^':   { precedence: 3, associativity: 'right' },
+        '√':   { precedence: 4, associativity: 'left' },
+        '!':   { precedence: 0, associativity: 0 },
+        'lg':  { precedence: 0, associativity: 0 },
+        'ln':  { precedence: 0, associativity: 0 },
+        'sin': { precedence: 0, associativity: 0 },
+        'cos': { precedence: 0, associativity: 0 },
     };
 
     constructor() {
@@ -30,11 +35,11 @@ export default class Calculator {
 
         if (!Number.isFinite(result)) return '∞';
         if (!Number.isInteger(result)) {
-            result = this.round(result, 6);
+            result = result.toFixed(6);
         }
-        return result > 1e+13 ||
-               result < -1e+13 ? 
-               result.toPrecision(13) : result;
+        return result > 1e+13 || result < -1e+13 ? 
+               parseFloat(result.toPrecision(13)) :
+               parseFloat(result);
     }
 
 // Токенизатор и сортировка (Функция парсинга символов в выражении и вычисления выражения с учетом приоритета операторов и скобок)
@@ -135,7 +140,8 @@ export default class Calculator {
         const currentOperator = stackOperators.pop();
         const rightOperand = stackNumbers.pop();
         const leftOperand = currentOperator !== '√' ? stackNumbers.pop() : null;
-        let result = this.performMath(currentOperator, leftOperand, rightOperand);
+        const result = this.performMath(currentOperator, leftOperand, rightOperand);
+        let formatedResult = this.formatResult(result);
 
         const ShouldKeepMinus = currentOperator === '^' &&
                               stackOperators.at(-1) === '(' &&
@@ -143,27 +149,34 @@ export default class Calculator {
                               leftOperand < 0 &&
                               rightOperand % 2 === 0;
 
-        if (ShouldKeepMinus) { result  = -result };
-        console.log(`Левый операнд: ${leftOperand}, Оператор: ${currentOperator}, Правый операнд: ${rightOperand}, Результат: ${result}`);
-        stackNumbers.push(result);
+        if (ShouldKeepMinus) { formatedResult  = -formatedResult };
+        console.log(`Левый операнд: ${leftOperand}, Оператор: ${currentOperator}, Правый операнд: ${rightOperand}, Результат: ${formatedResult}`);
+        stackNumbers.push(formatedResult);
     }
-
+/* 
     round(number, decimals = 6) {
         const factor = Math.pow(10, decimals);
         return Math.round(number * factor) / factor;
-    }
+    } */
 
 // Функция для выполнения одной математической операции
 
     performMath(operator, a, b) {
+        const factorial = (n) => (n > 1) ? n * factorial(n - 1) : 1;
+        
         switch (operator) {
-            case '+': return this.round(a + b);
-            case '-': return this.round(a - b);
-            case '*': return this.round(a * b);
-            case '/': return b !== 0 ? this.round(a / b) : NaN;
-            case '%': return this.round(a % b);
-            case '^': return this.round(Math.pow(a, b));
-            case '√': return this.round(Math.sqrt(b));
+            case '+': return (a + b);
+            case '-': return (a - b);
+            case '*': return (a * b);
+            case '/': return b !== 0 ? (a / b) : NaN;
+            case '%': return (a % b);
+            case '^': return (Math.pow(a, b));
+            case '√': return (Math.sqrt(b));
+            case '!': return Number.isInteger(b) ? (factorial(b)) : NaN;
+            case 'lg': return (Math.log10(b));
+            case 'ln': return (Math.log(b));
+            case 'sin': return (Math.sin(b));
+            case 'cos': return (Math.cos(b));
             default: return b;
         }
     }
