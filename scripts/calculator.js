@@ -94,14 +94,14 @@ export default class Calculator {
     
 
     resolveParentheses() { 
-            while (
-                this.stackOperators.length &&
-                this.stackOperators.at(-1) !== '('
-            ) {
-                this.applyOperator();
-            }
+        while (
+            this.stackOperators.length &&
+            this.stackOperators.at(-1) !== '('
+        ) {
+            this.applyOperator();
+        }
     
-            this.stackOperators.pop();   
+        this.stackOperators.pop();   
     }
 
 
@@ -153,16 +153,18 @@ export default class Calculator {
         console.log(`Левый операнд: ${leftOperand}, Оператор: ${currentOperator}, Правый операнд: ${rightOperand}, Результат: ${formatedResult}`);
         stackNumbers.push(formatedResult);
     }
-/* 
-    round(number, decimals = 6) {
-        const factor = Math.pow(10, decimals);
-        return Math.round(number * factor) / factor;
-    } */
 
 // Функция для выполнения одной математической операции
 
     performMath(operator, a, b) {
-        const factorial = (n) => (n > 1) ? n * factorial(n - 1) : 1;
+        
+        const factorial = (n) => { 
+            
+            if (!Number.isInteger(n)) return NaN; 
+            else if (n < 0) return -factorial(-n);
+            else if (n > 1) return n * factorial(n - 1)
+            else return 1;   
+        }
         
         switch (operator) {
             case '+': return (a + b);
@@ -172,7 +174,7 @@ export default class Calculator {
             case '%': return (a % b);
             case '^': return (Math.pow(a, b));
             case '√': return (Math.sqrt(b));
-            case '!': return Number.isInteger(b) ? (factorial(b)) : NaN;
+            case '!': return factorial(b);
             case 'lg': return (Math.log10(b));
             case 'ln': return (Math.log(b));
             case 'sin': return (Math.sin(b));
