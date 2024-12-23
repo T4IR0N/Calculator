@@ -7,12 +7,12 @@ export default class Calculator {
         '/':   { precedence: 2, associativity: 'left' },
         '%':   { precedence: 2, associativity: 'left' },
         '^':   { precedence: 3, associativity: 'right' },
-        '√':   { precedence: 4, associativity: 'left' },
-        '!':   { precedence: 0, associativity: 0 },
-        'lg':  { precedence: 0, associativity: 0 },
-        'ln':  { precedence: 0, associativity: 0 },
-        'sin': { precedence: 0, associativity: 0 },
-        'cos': { precedence: 0, associativity: 0 },
+        '√':   { precedence: 4, associativity: false },
+        '!':   { precedence: 4, associativity: false },
+        'lg':  { precedence: 4, associativity: false },
+        'ln':  { precedence: 4, associativity: false },
+        'sin': { precedence: 4, associativity: false },
+        'cos': { precedence: 4, associativity: false },
     };
 
     constructor() {
@@ -139,7 +139,10 @@ export default class Calculator {
 
         const currentOperator = stackOperators.pop();
         const rightOperand = stackNumbers.pop();
-        const leftOperand = currentOperator !== '√' ? stackNumbers.pop() : null;
+        
+        const leftOperand = this.validOperators[currentOperator].associativity ?
+                            stackNumbers.pop() : null;
+                
         const result = this.performMath(currentOperator, leftOperand, rightOperand);
         let formatedResult = this.formatResult(result);
 
