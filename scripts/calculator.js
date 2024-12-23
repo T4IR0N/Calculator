@@ -157,11 +157,9 @@ export default class Calculator {
 // Функция для выполнения одной математической операции
 
     performMath(operator, a, b) {
-        
+
         const factorial = (n) => { 
-            
-            if (!Number.isInteger(n)) return NaN; 
-            else if (n < 0) return -factorial(-n);
+            if (!Number.isInteger(n) || n < 0) return NaN; 
             else if (n > 1) return n * factorial(n - 1)
             else return 1;   
         }
