@@ -18,13 +18,12 @@ export default class Calculator {
     constructor() {
         this.stackNumbers = [];      // стек для хранения чисел (операндов)
         this.stackOperators = [];    // стек для хранения операторов
-        this.currentNumber = '';    //  // текущее обрабатываемое число (буфер)
-        this.tokenizedExpression  
+        this.currentNumber = '';    //  // текущее обрабатываемое число (буфер) 
     }
 
 // Основная функция калькулятора (считаем всё выражение полностью)
     calculate(expression) {
-        this.tokenizedExpression = this.tokenize(expression) // Тоекнизируем выражение (каждый токен записывается в массив)
+        const tokenizedExpression = this.tokenize(expression) // Тоекнизируем выражение (каждый токен записывается в массив)
         this.parseExpression(tokenizedExpression); // парсим и считаем выражение
         this.pushNumberToStack(); // Добавляем последнее число из буфера
         while (this.stackOperators.length) this.applyOperator(); // Выполняем оставшиеся операции в стеке
@@ -142,26 +141,30 @@ export default class Calculator {
 
 // Функция сортировочной станции ОПЗ (вычисления выражения оператором из стека операторов и добавления полученного числа в стек чисел)
     applyOperator() {
+    
         const { stackOperators, stackNumbers } = this;
-
         const currentOperator = stackOperators.pop();
         const rightOperand = stackNumbers.pop();
-        
         const leftOperand = this.validOperators[currentOperator].associativity ?
                             stackNumbers.pop() : null;
                 
-        const result = this.performMath(currentOperator, leftOperand, rightOperand);
-        let formatedResult = this.formatResult(result);
+        const result = this.performMath(currentOperator, leftOperand, rightOperand)
+        const formattedResult = this.formatResult(result);        
+        const finalResult = this.keepMinusAfterPower(currentOperator, leftOperand, rightOperand, formattedResult);
 
-        const ShouldKeepMinus = currentOperator === '^' &&
-                              stackOperators.at(-1) === '(' &&
-                              stackOperators.at(-2) !== '√' &&
-                              leftOperand < 0 &&
-                              rightOperand % 2 === 0;
+        console.log(`Левый операнд: ${leftOperand}, Оператор: ${currentOperator}, Правый операнд: ${rightOperand}, Результат: ${finalResult}`);
+        stackNumbers.push(finalResult);
+    }
 
-        if (ShouldKeepMinus) { formatedResult  = -formatedResult };
-        console.log(`Левый операнд: ${leftOperand}, Оператор: ${currentOperator}, Правый операнд: ${rightOperand}, Результат: ${formatedResult}`);
-        stackNumbers.push(formatedResult);
+
+    keepMinusAfterPower(operator, a, b, result) {
+        if (operator === '^' &&
+            this.stackOperators.at(-1) === '(' &&
+            this.stackOperators.at(-2) !== '√' &&
+            a < 0 &&
+            b % 2 === 0) return -result;
+
+        else return result
     }
 
 // Функция для выполнения одной математической операции
