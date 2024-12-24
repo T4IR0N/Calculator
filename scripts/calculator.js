@@ -18,12 +18,14 @@ export default class Calculator {
     constructor() {
         this.stackNumbers = [];      // стек для хранения чисел (операндов)
         this.stackOperators = [];    // стек для хранения операторов
-        this.currentNumber = '';     // текущее обрабатываемое число (буфер)
+        this.currentNumber = '';    //  // текущее обрабатываемое число (буфер)
+        this.tokenizedExpression  
     }
 
 // Основная функция калькулятора (считаем всё выражение полностью)
     calculate(expression) {
-        this.parseExpression(expression); // парсим и считаем выражение
+        this.tokenizedExpression = this.tokenize(expression) // Тоекнизируем выражение (каждый токен записывается в массив)
+        this.parseExpression(tokenizedExpression); // парсим и считаем выражение
         this.pushNumberToStack(); // Добавляем последнее число из буфера
         while (this.stackOperators.length) this.applyOperator(); // Выполняем оставшиеся операции в стеке
         let result = this.stackNumbers.pop();
@@ -42,6 +44,11 @@ export default class Calculator {
                parseFloat(result);
     }
 
+
+    tokenize(expression) {
+        return expression.match(/(\d+(\.\d+)?|lg|ln|sin|cos|[+\-*/^%!()]|\S)/g)
+    }
+
 // Токенизатор и сортировка (Функция парсинга символов в выражении и вычисления выражения с учетом приоритета операторов и скобок)
     parseExpression(expression) {
         
@@ -53,8 +60,8 @@ export default class Calculator {
         const isConstant = (char) => char === 'π' || char === 'e';
         const isUnaryOperator = (char) => (char === '-' || char === '+') &&
                                           (this.currentNumber === '' &&
-                                          (this.stackOperators.length === 0 || 
-                                          isOpeningParenthesis(this.stackOperators[this.stackOperators.length - 1])));
+                                          (!this.stackOperators.length || 
+                                          isOpeningParenthesis(this.stackOperators.at(-1))));
         
         for (let char of expression) {
             if (isDigit(char) || isPoint(char) || isConstant(char) || isUnaryOperator(char)) {
