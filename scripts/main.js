@@ -4,9 +4,9 @@ const calculator = new Calculator();
 class CalculatorUI {
 
     // Свойства класса (константы) 
-    static validDigits = '1234567890.'; // валидные цифры и символы
-    static validOperators = "+-*/^%"; // валидные операторы
-    static unaryOperators = "√-"; // унарные операторы
+    static validDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']; // валидные цифры и символы
+    static binaryOperators = ['+', '-', '*', '/', '^', '%']; // валидные операторы
+    static unaryOperators = ['-', '√', '!', 'sin', 'cos', 'lg', 'ln']; // унарные операторы
     static brackets = '()'; // скобки
     static maxInputLength = 18; // Максимальная длина ввода
     
@@ -56,7 +56,7 @@ handleCalcButtonClick(value) {
     const isUnaryOperator = (char) => CalculatorUI.unaryOperators.includes(char) &&
                                       (!this.currentInput || this.currentExpression.endsWith("("));
 
-    const isOperator = (char) => CalculatorUI.validOperators.includes(char) &&
+    const isOperator = (char) => CalculatorUI.binaryOperators.includes(char) &&
                                  this.currentInput && !this.currentInput.endsWith("-");
     
     const isClearAll = (char) => char === 'C' || char === 'Delete';
