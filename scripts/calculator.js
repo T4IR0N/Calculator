@@ -45,7 +45,7 @@ export default class Calculator {
 
 
     tokenize(expression) {
-        return expression.match(/(\d+(\.\d+)?|lg|ln|sin|cos|[+\-*/^%!()]|\S)/g)
+        return expression.match(/\d|lg|ln|sin|cos|[πe+\-*/^%!().]/g)
     }
 
 // Токенизатор и сортировка (Функция парсинга символов в выражении и вычисления выражения с учетом приоритета операторов и скобок)
