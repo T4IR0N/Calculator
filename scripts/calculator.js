@@ -45,7 +45,7 @@ export default class Calculator {
 
 
     tokenize(expression) {
-        return expression.match(/\d|lg|ln|sin|cos|[πe+\-*/^%!().]/g)
+        return expression.match(/\d|lg|ln|sin|cos|[πe+\-*/^√%!().]/g)
     }
 
 // Токенизатор и сортировка (Функция парсинга символов в выражении и вычисления выражения с учетом приоритета операторов и скобок)
@@ -57,13 +57,13 @@ export default class Calculator {
         const isOpeningParenthesis = (char) => char === '(';
         const isClosingParenthesis = (char) => char === ')';
         const isConstant = (char) => char === 'π' || char === 'e';
-        const isUnaryOperator = (char) => (char === '-' || char === '+') &&
-                                          (this.currentNumber === '' &&
-                                          (!this.stackOperators.length || 
-                                          isOpeningParenthesis(this.stackOperators.at(-1))));
+        const isUnaryMinus = (char) => (char === '-') &&
+                                        (this.currentNumber === '' &&
+                                        (!this.stackOperators.length || 
+                                        isOpeningParenthesis(this.stackOperators.at(-1))));
         
         for (let char of expression) {
-            if (isDigit(char) || isPoint(char) || isConstant(char) || isUnaryOperator(char)) {
+            if (isDigit(char) || isPoint(char) || isConstant(char) || isUnaryMinus(char)) {
                 this.composeNumber(char) 
                  console.log(`Добавлено число или унарный оператор: ${this.currentNumber}`);
                 }          
@@ -76,12 +76,14 @@ export default class Calculator {
             
             else if (isOpeningParenthesis(char)) {
                 this.pushOperatorToStack(char)
+                console.log(`скобка добавлена в стек: ${char}`)
             }
 
             else if (isClosingParenthesis(char)) {
                 this.pushNumberToStack()
+                console.log(`Считаем выражение перед: ${char} до открывающей скобки в стеке`)
                 this.resolveParentheses() 
-                console.log(`выражение перед: ${char} было посчитано до открывающей скобки`)
+                
             };
         }
     }
