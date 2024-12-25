@@ -178,18 +178,31 @@ export default class Calculator {
         }
         
         switch (operator) {
-            case '+': return (a + b);
-            case '-': return (a - b);
-            case '*': return (a * b);
-            case '/': return b !== 0 ? (a / b) : NaN;
-            case '%': return (a % b);
-            case '^': return (Math.pow(a, b));
-            case '√': return (Math.sqrt(b));
-            case '!': return factorial(b);
-            case 'lg': return (Math.log10(b));
-            case 'ln': return (Math.log(b));
-            case 'sin': return (Math.sin(b));
-            case 'cos': return (Math.cos(b));
+            case '+':
+                return (a + b);
+            case '-':
+                return (a - b);
+            case '*':
+                return (a * b);
+            case '/':
+                return b !== 0 ? (a / b) : NaN;
+            case '%':
+                return (a % b);
+            case '^':
+                return (Math.pow(a, b));
+            case '√':
+                return (Math.sqrt(b));
+            case '!':
+                return factorial(b);
+            case 'lg':
+                return (Math.log10(b));
+            case 'ln':
+                return (Math.log(b));
+            case 'sin':
+                return (Math.sin(b));
+            case 'cos':
+                return (Math.cos(b));
+        
             default: return b;
         }
     }
