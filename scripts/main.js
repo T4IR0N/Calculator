@@ -7,7 +7,8 @@ class CalculatorUI {
     static validDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']; // валидные цифры и символы
     static binaryOperators = ['+', '-', '*', '/', '^', '%']; // валидные операторы
     static unaryOperators = ['-', '√', '!', 'sin', 'cos', 'lg', 'ln']; // унарные операторы
-    static brackets = '()'; // скобки
+    static constants = ['π', 'e']
+    static parens = ['(', ')']; // скобки
     static maxInputLength = 18; // Максимальная длина ввода
     
 
@@ -22,99 +23,95 @@ class CalculatorUI {
         this.display.addEventListener('click', () => this.toggleKeydownListener())
     }
 
-// Обработчики событий
-addButtonClickListener(button) {
-    button.addEventListener('click', (event) => this.handleCalcButtonClick(event.target.textContent))
-}
-
-handleKeydownEvent = (event) => {
-    this.handleCalcButtonClick(event.key);
-};
-
-toggleKeydownListener() {
-    if (!this.isKeydownListenerActive) {
-        document.addEventListener('keydown', this.handleKeydownEvent); 
-    } else {
-        document.removeEventListener('keydown', this.handleKeydownEvent);
+    // Обработчики событий
+    addButtonClickListener(button) {
+        button.addEventListener('click', (event) => this.handleCalcButtonClick(event.target.textContent))
     }
-    this.isKeydownListenerActive = !this.isKeydownListenerActive; // Переключаем состояние
-}
 
+    handleKeydownEvent = (event) => {
+        this.handleCalcButtonClick(event.key);
+    };
 
+    toggleKeydownListener() {
+        if (!this.isKeydownListenerActive) {
+            document.addEventListener('keydown', this.handleKeydownEvent); 
+        } else {
+            document.removeEventListener('keydown', this.handleKeydownEvent);
+        }
+        this.isKeydownListenerActive = !this.isKeydownListenerActive; // Переключаем состояние
+    }
 
-// Функция для обновления дисплея
-updateDisplay(value) {
-    this.display.textContent = value || '0';
-}
+    // Функция для обновления дисплея
+    updateDisplay(value) {
+        this.display.textContent = value || '0';
+    }
 
-// Обработчик значений кнопки
-handleCalcButtonClick(value) {
+    // Обработчик значений кнопки
+    handleCalcButtonClick(value) {
 
-    const isDigit = (char) => CalculatorUI.validDigits.includes(char);
-    const isBracket = (char) => CalculatorUI.brackets.includes(char);
+        const isDigit = (char) => CalculatorUI.validDigits.includes(char);
+        const isParen = (char) => CalculatorUI.parens.includes(char);
 
-    const isUnaryOperator = (char) => CalculatorUI.unaryOperators.includes(char) &&
-                                      (!this.currentInput || this.currentExpression.endsWith("("));
+        const isUnaryOperator = (char) => CalculatorUI.unaryOperators.includes(char) &&
+                                        (!this.currentInput || this.currentExpression.endsWith("("));
 
-    const isOperator = (char) => CalculatorUI.binaryOperators.includes(char) &&
-                                 this.currentInput && !this.currentInput.endsWith("-");
-    
-    const isClearAll = (char) => char === 'C' || char === 'Delete';
-    const isClearEntry = (char) => (char === 'Del' || char === "Backspace") && this.currentExpression.length > 0;
-    const isMaxInput = () => this.currentExpression.length > CalculatorUI.maxInputLength;
-    const isSecondPoint = (char) => char === '.' && this.currentInput.includes(char);
-    const isPI = (char) => char === 'π' && !/[\dπe]$/.test(this.currentInput);
-    const isEXP = (char) => char === 'e' && !/[\dπe]$/.test(this.currentInput);
-    const isEquals = (char) => char === '=' || char ==='Enter';
-
-    switch (true) {
-        case isClearAll(value):
-            this.setExpression();
-            this.updateDisplay('0');
-            break;
-
-        case isClearEntry(value):
-            this.setExpression(this.currentExpression.slice(0, -1)); // Обновляем Expression
-            this.updateDisplay(this.currentExpression || '0');
-            break;
-
-        case isMaxInput(): return;
-
-        case isSecondPoint(value): break;
-   
-        case isDigit(value):
-        case isOperator(value):
-        case isUnaryOperator(value):
-        case isPI(value):
-        case isEXP(value):
-        case isBracket(value):
-            
-            if (isOperator(value)) this.currentInput = '';
-            this.composeExpression(value);
-            this.updateDisplay(this.currentExpression);
-            break;
+        const isOperator = (char) => CalculatorUI.binaryOperators.includes(char) &&
+                                    this.currentInput && !this.currentInput.endsWith("-");
         
-        case isEquals(value):
-            if (this.currentExpression) {
-            console.log(`Выражение для вычисления: ${this.currentExpression}`);
-            let mathResult = String(calculator.calculate(this.currentExpression));
-            this.setExpression(mathResult);
-            this.updateDisplay(this.currentExpression);
-            }
-            break;
+        const isClearAll = (char) => char === 'C' || char === 'Delete';
+        const isClearEntry = (char) => (char === 'Del' || char === "Backspace") && this.currentExpression.length > 0;
+        const isMaxInput = () => this.currentExpression.length > CalculatorUI.maxInputLength;
+        const isSecondPoint = (char) => char === '.' && this.currentInput.includes(char);
+        const isConstant = (char) => CalculatorUI.constants.includes(char) && !/[\dπe]$/.test(this.currentInput);
+        const isEquals = (char) => char === '=' || char ==='Enter';
 
+        switch (true) {
+            case isClearAll(value):
+                this.setExpression();
+                this.updateDisplay('0');
+                break;
+
+            case isClearEntry(value):
+                this.setExpression(this.currentExpression.slice(0, -1)); // Обновляем Expression
+                this.updateDisplay(this.currentExpression || '0');
+                break;
+
+            case isMaxInput(): return;
+
+            case isSecondPoint(value): break;
+    
+            case isDigit(value):
+            case isOperator(value):
+            case isUnaryOperator(value):
+            case isConstant(value):
+            case isParen(value):
+                
+                if (isOperator(value)) this.currentInput = '';
+                this.composeExpression(value);
+                this.updateDisplay(this.currentExpression);
+                break;
+            
+            case isEquals(value):
+                if (this.currentExpression) {
+                console.log(`Выражение для вычисления: ${this.currentExpression}`);
+                let mathResult = String(calculator.calculate(this.currentExpression));
+                this.setExpression(mathResult);
+                this.updateDisplay(this.currentExpression);
+                }
+                break;
+
+        }
     }
-}
 
-composeExpression(value) {
-    this.currentInput += value;
-    this.currentExpression += value;
-}
+    composeExpression(value) {
+        this.currentInput += value;
+        this.currentExpression += value;
+    }
 
-setExpression(input = '') {
-    this.currentInput = input;
-    this.currentExpression = input;
-}
+    setExpression(input = '') {
+        this.currentInput = input;
+        this.currentExpression = input;
+    }
 
 }
 
