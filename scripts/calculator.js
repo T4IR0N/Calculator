@@ -45,25 +45,32 @@ export default class Calculator {
 
 
     tokenize(expression) {
-        return expression.match(/\d|lg|ln|sin|cos|[πe+\-*/^√%!().]/g)
+
+        let tokenized = expression.match(/\d|lg|ln|sin|cos|[πe+\-*/^√%!().]/g);
+
+        let tokenizedWithConstants = tokenized.map((char) => {
+            if (char === 'π') char = Math.PI.toString();
+            if (char === 'e') char = Math.E.toString();
+            return char
+        })
+        console.log(tokenizedWithConstants);
+        return tokenizedWithConstants
     }
 
 // Токенизатор и сортировка (Функция парсинга символов в выражении и вычисления выражения с учетом приоритета операторов и скобок)
     parseExpression(expression) {
         
+        let previousChar = '';
         const isDigit = (char) => /\d/.test(char);
         const isPoint = (char) => char === '.' && !this.currentNumber.includes('.');
         const isOperator = (char) => Object.hasOwn(this.validOperators, char)
-        const isOpeningParenthesis = (char) => char === '(';
-        const isClosingParenthesis = (char) => char === ')';
-        const isConstant = (char) => char === 'π' || char === 'e';
-        const isUnaryMinus = (char) => (char === '-') &&
-                                        (this.currentNumber === '' &&
-                                        (!this.stackOperators.length || 
-                                        isOpeningParenthesis(this.stackOperators.at(-1))));
+        const isOpeningParen = (char) => char === '(';
+        const isClosingParen = (char) => char === ')';
+        const isUnaryMinus = (char) => (!this.currentNumber && !/\d|\)/.test(previousChar  || '(')) &&
+                                        (char === '-')
         
         for (let char of expression) {
-            if (isDigit(char) || isPoint(char) || isConstant(char) || isUnaryMinus(char)) {
+            if (isDigit(char) || isPoint(char) || isUnaryMinus(char)) {
                 this.composeNumber(char) 
                  console.log(`Добавлено число или унарный оператор: ${this.currentNumber}`);
                 }          
@@ -74,23 +81,22 @@ export default class Calculator {
                 console.log(`Оператор добавлен в стек: ${char}`)
             }
             
-            else if (isOpeningParenthesis(char)) {
+            else if (isOpeningParen(char)) {
                 this.pushOperatorToStack(char)
                 console.log(`скобка добавлена в стек: ${char}`)
             }
 
-            else if (isClosingParenthesis(char)) {
+            else if (isClosingParen(char)) {
                 this.pushNumberToStack()
                 console.log(`Считаем выражение перед: ${char} до открывающей скобки в стеке`)
-                this.resolveParentheses() 
+                this.resolveParens() 
                 
             };
+            previousChar = char;
         }
     }
 
-    composeNumber(char) {
-        if (char === 'π') char = Math.PI;
-        if (char === 'e') char = Math.E;
+    composeNumber(char) {   
         this.currentNumber += char // Строим число
         console.log(`Текущее число: ${this.currentNumber}`);
     } 
@@ -101,14 +107,10 @@ export default class Calculator {
     }
     
 
-    resolveParentheses() { 
-        while (
-            this.stackOperators.length &&
-            this.stackOperators.at(-1) !== '('
-        ) {
+    resolveParens() { 
+        while (this.stackOperators.length && this.stackOperators.at(-1) !== '(') {
             this.applyOperator();
         }
-    
         this.stackOperators.pop();   
     }
 

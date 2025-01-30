@@ -107,15 +107,11 @@ class CalculatorUI {
 
     getEndChar(expression) {
         
-        let validChars = [...CalculatorUI.validDigits,
-                        ...CalculatorUI.binaryOperators,
-                        ...CalculatorUI.unaryOperators,
-                        ...CalculatorUI.constants,
-                        ...CalculatorUI.parens,
-        ]
+        let validChars = [ ...CalculatorUI.validDigits, ...CalculatorUI.binaryOperators,
+                        ...CalculatorUI.unaryOperators, ...CalculatorUI.constants, ...CalculatorUI.parens ]
 
         let char = validChars.find(char => expression.endsWith(char));
-        return char || 'NaN'
+        return char ?? 'NaN'
     }
 
     composeExpression(value) {
