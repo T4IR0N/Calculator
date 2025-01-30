@@ -72,7 +72,8 @@ class CalculatorUI {
                 break;
 
             case isClearEntry(value):
-                this.setExpression(this.currentExpression.slice(0, -1)); // Обновляем Expression
+                let endChar = this.getEndChar(this.currentExpression);
+                this.setExpression(this.currentExpression.slice(0, -endChar.length)); // Обновляем Expression
                 this.updateDisplay(this.currentExpression || '0');
                 break;
 
@@ -87,6 +88,7 @@ class CalculatorUI {
             case isParen(value):
                 
                 if (isOperator(value)) this.currentInput = '';
+                console.log(`Инпут: ${this.currentInput }`);
                 this.composeExpression(value);
                 this.updateDisplay(this.currentExpression);
                 break;
@@ -103,7 +105,21 @@ class CalculatorUI {
         }
     }
 
+    getEndChar(expression) {
+        
+        let validChars = [...CalculatorUI.validDigits,
+                        ...CalculatorUI.binaryOperators,
+                        ...CalculatorUI.unaryOperators,
+                        ...CalculatorUI.constants,
+                        ...CalculatorUI.parens,
+        ]
+
+        let char = validChars.find(char => expression.endsWith(char));
+        return char || 'NaN'
+    }
+
     composeExpression(value) {
+        if (CalculatorUI.unaryOperators.includes(value) && value !== '-') value += '('
         this.currentInput += value;
         this.currentExpression += value;
     }
