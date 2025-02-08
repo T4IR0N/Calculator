@@ -7,19 +7,28 @@ export default class Calculator {
         '/':   { precedence: 2, associativity: 'left' },
         '%':   { precedence: 2, associativity: 'left' },
         '^':   { precedence: 3, associativity: 'right' },
-        '√':   { precedence: 4, associativity: false },
-        '!':   { precedence: 4, associativity: false },
-        'lg':  { precedence: 4, associativity: false },
-        'ln':  { precedence: 4, associativity: false },
-        'sin': { precedence: 4, associativity: false },
-        'cos': { precedence: 4, associativity: false },
+        '√':   { precedence: 4, associativity: null },
+        '∛':   { precedence: 4, associativity: null },
+        '!':   { precedence: 4, associativity: null },
+        'lg':  { precedence: 4, associativity: null },
+        'ln':  { precedence: 4, associativity: null },
+        'sin': { precedence: 4, associativity: null },
+        'cos': { precedence: 4, associativity: null },
+        'tan': { precedence: 4, associativity: null },
     };
 
     constructor() {
         this.stackNumbers = [];      // стек для хранения чисел (операндов)
         this.stackOperators = [];    // стек для хранения операторов
         this.currentNumber = '';    //  // текущее обрабатываемое число (буфер) 
+        this.isRadian = true;
     }
+
+
+    set switchToDegrees(value) {
+        this.isRadian = value === 'rad';
+    }
+    
 
 // Основная функция калькулятора (считаем всё выражение полностью)
     calculate(expression) {
@@ -34,7 +43,7 @@ export default class Calculator {
 // Если число дробное, возвращаем значение с точностью до 6 знаков, если слишком большое или маленькое с точностью до 13 знаков
     formatResult(result) {
 
-        if (!Number.isFinite(result)) return '∞';
+        if (!Number.isFinite(result)) return result;
         if (!Number.isInteger(result)) {
             result = result.toFixed(6);
         }
@@ -46,34 +55,32 @@ export default class Calculator {
 
     tokenize(expression) {
 
-        let tokenized = expression.match(/\d|lg|ln|sin|cos|[πe+\-*/^√%!().]/g);
-
-        let tokenizedWithConstants = tokenized.map((char) => {
+        let tokens = expression.match(/\d+\.?\d*(e[+\-]?\d+)?|lg|ln|sin|cos|tan|[πe+\-*/^√∛%!().]/g)
+        let tokensWithConstants = tokens.map((char) => {
             if (char === 'π') char = Math.PI.toString();
             if (char === 'e') char = Math.E.toString();
             return char
         })
-        console.log(tokenizedWithConstants);
-        return tokenizedWithConstants
+        console.log(tokensWithConstants);
+        return tokensWithConstants
     }
 
 // Токенизатор и сортировка (Функция парсинга символов в выражении и вычисления выражения с учетом приоритета операторов и скобок)
     parseExpression(expression) {
         
         let previousChar = '';
-        const isDigit = (char) => /\d/.test(char);
-        const isPoint = (char) => char === '.' && !this.currentNumber.includes('.');
-        const isOperator = (char) => Object.hasOwn(this.validOperators, char)
+        const isDigitOrPoint = (char) => /\d|\./.test(char);
+        const isOperator = (char) => Object.hasOwn(this.validOperators, char);
         const isOpeningParen = (char) => char === '(';
         const isClosingParen = (char) => char === ')';
         const isUnaryMinus = (char) => (!this.currentNumber && !/\d|\)/.test(previousChar  || '(')) &&
-                                        (char === '-')
+                                        (char === '-');
         
         for (let char of expression) {
-            if (isDigit(char) || isPoint(char) || isUnaryMinus(char)) {
+            if (isDigitOrPoint(char) || isUnaryMinus(char)) {
                 this.composeNumber(char) 
                  console.log(`Добавлено число или унарный оператор: ${this.currentNumber}`);
-                }          
+            }          
             else if (isOperator(char)) {
                 this.pushNumberToStack();
                 this.processOperatorPrecedence(char);
@@ -108,8 +115,9 @@ export default class Calculator {
     
 
     resolveParens() { 
-        while (this.stackOperators.length && this.stackOperators.at(-1) !== '(') {
-            this.applyOperator();
+        while (this.stackOperators.length &&
+                this.stackOperators.at(-1) !== '(') {
+                    this.applyOperator();
         }
         this.stackOperators.pop();   
     }
@@ -149,7 +157,7 @@ export default class Calculator {
         const { stackOperators, stackNumbers } = this;
         const currentOperator = stackOperators.pop();
         const rightOperand = stackNumbers.pop();
-        const leftOperand = this.validOperators[currentOperator].associativity ?
+        const leftOperand = this.validOperators[currentOperator].associativity !== null ?
                             stackNumbers.pop() : null;
                 
         const result = this.performMath(currentOperator, leftOperand, rightOperand)
@@ -177,8 +185,8 @@ export default class Calculator {
 
         const factorial = (n) => { 
             if (!Number.isInteger(n) || n < 0) return NaN; 
-            else if (n > 1) return n * factorial(n - 1)
-            else return 1;   
+            else if (n > 2) return n * factorial(n - 1)
+            else return n;   
         }
         
         switch (operator) {
@@ -196,6 +204,8 @@ export default class Calculator {
                 return (Math.pow(a, b));
             case '√':
                 return (Math.sqrt(b));
+            case '∛':
+                return (Math.cbrt(b));
             case '!':
                 return factorial(b);
             case 'lg':
@@ -203,9 +213,11 @@ export default class Calculator {
             case 'ln':
                 return (Math.log(b));
             case 'sin':
-                return (Math.sin(b));
+                return this.isRadian ? (Math.sin(b)) : Math.sin(b * Math.PI / 180);
             case 'cos':
-                return (Math.cos(b));
+                return this.isRadian ? (Math.cos(b)) : Math.cos(b * Math.PI / 180);
+            case 'tan':
+                return this.isRadian ? (Math.tan(b)) : Math.tan(b * Math.PI / 180);
         
             default: return b;
         }
