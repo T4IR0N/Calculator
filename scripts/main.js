@@ -1,5 +1,5 @@
 import Calculator from './calculator.js';
-const calculator = new Calculator();
+
 
 class CalculatorUI {
 
@@ -13,6 +13,7 @@ class CalculatorUI {
     
 
     constructor() {
+        this.calculator = new Calculator();
         this.display = document.querySelector('.display');
         this.calcButtons = document.querySelectorAll('.calc-button');
         this.radianButton = document.querySelector('#radian-degree-btn');
@@ -69,7 +70,7 @@ class CalculatorUI {
             case this.parser.isEquals(value):
                 if (/[\dπe!)]$/.test(this.currentExpression)) {
                     console.log(`Выражение для вычисления: ${this.currentExpression}`);
-                    let mathResult = String(calculator.calculate(this.currentExpression));
+                    let mathResult = String(this.calculator.calculate(this.currentExpression));
                     this.setExpression(mathResult);
                     this.updateDisplay(this.currentExpression);
                 }
