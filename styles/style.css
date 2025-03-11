@@ -136,6 +136,12 @@ h1, h2 {
     text-align: center;
     white-space: nowrap; /* Запрещает перенос текста */
 }
+
+#radian-degree-btn {
+    background-color: #7d83a3;
+}
+
+
 .side-Button:hover {
     background-color: #6C6F7F;
 }
