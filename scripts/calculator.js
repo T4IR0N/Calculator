@@ -1,158 +1,133 @@
+import Parser from './parser.js'
+
 export default class Calculator {
     
-    validOperators = {
-        '+': { precedence: 1, associativity: 'left' },
-        '-': { precedence: 1, associativity: 'left' },
-        '*': { precedence: 2, associativity: 'left' },
-        '/': { precedence: 2, associativity: 'left' },
-        '%': { precedence: 2, associativity: 'left' },
-        '^': { precedence: 3, associativity: 'right' },
-        '√': { precedence: 4, associativity: 'left' }
-    };
-
     constructor() {
-        this.stackNumbers = [];      // стек для хранения чисел (операндов)
-        this.stackOperators = [];    // стек для хранения операторов
-        this.currentNumber = '';     // текущее обрабатываемое число (буфер)
+        this.parser = new Parser();
+        this.isRadian = true;
     }
 
-// Основная функция калькулятора (считаем всё выражение полностью)
+    switchRadian(value) {
+        this.isRadian = (value === 'rad');
+    }
+    
+
     calculate(expression) {
-        this.parseExpression(expression); // парсим и считаем выражение
-        if (this.currentNumber) this.addNumberToStack(); // Добавляем последнее число из буфера
-        while (this.stackOperators.length) this.applyOperator(); // Выполняем оставшиеся операции в стеке
-        let result = this.stackNumbers.pop();
-        return this.formatResult(result)
+        const tokenizedExpression = this.parser.tokenize(expression);
+        const postfixExpression = this.parser.parseToPostfix(tokenizedExpression);
+        const result = this.applyOperators(postfixExpression);
+        const formattedResult = this.formatResult(result);
+        return formattedResult
     }
 
-// Если число дробное, возвращаем значение с точностью до 6 знаков, если слишком большое или маленькое с точностью до 13 знаков
-    formatResult(result) {
-        return !Number.isFinite(result) ? '∞'
-               : !Number.isInteger(result) ? parseFloat(result.toFixed(6)) 
-               : result > 1e+13 || result < -1e+13 ? result.toPrecision(13)
-               : result;
-    }
 
-// Токенизатор и сортировка (Функция парсинга символов в выражении и вычисления выражения с учетом приоритета операторов и скобок)
-    parseExpression(expression) {
-        
-        let previousChar = '';
-        const isDigit = (char) => /\d/.test(char);
-        const isPoint = (char) => char === '.' && !this.currentNumber.includes('.');
-        const isOperator = (char) => Object.hasOwn(this.validOperators, char)
-        const isBracket = (char) => char === '(' || char === ')';
-        const isUnaryOperator = (char) => (char === '-' || char === '+') &&
-                                          (!this.currentNumber && !/\d|\)/.test(previousChar  || '('));
-        
-        for (let char of expression) {
-            if (isDigit(char) || isPoint(char) || isUnaryOperator(char)) {
-                this.composeNumber(char) 
-                 console.log(`Добавлено число или унарный оператор: ${this.currentNumber}`);
-                }          
-            else if (isOperator(char)) {
-                this.addOperatorToStack(char)
-                console.log(`Оператор добавлен в стек: ${char}`)
+    /**
+     * Применяет операторы постфиксного выражения для вычисления результата.
+     *
+     * @param {Array<number|string>} postfixExpression - Постфиксное выражение для вычисления.
+     * @returns {number|string} Отформатированный результат вычисления.
+     *
+     * @description
+     * Итеративно проходит по постфиксному выражению.
+     * Если встречается число, то оно помещается в стек для хранения операндов.
+     * Если встречается оператор, извлекает операнды из стека,
+     * выполняет математическую операцию и помещает результат обратно в стек.  
+     * В конце возвращает отформатированный результат, оставшийся в стеке.
+     */
+
+    applyOperators(postfixExpression) {
+        const numberStack = [];
+        for (const token of postfixExpression) {
+            if (typeof token === 'number') {
+                numberStack.push(token);
+            } else {
+                const rightOperand = numberStack.pop();
+                const leftOperand = (Parser.validOperators[token]?.associativity) ? numberStack.pop() : null;
+                const result = this.performMath(token, leftOperand, rightOperand);
+                numberStack.push(result);
             }
-            else if (isBracket(char)) {
-                this.manageBrackets(char) 
-                console.log(`скобка добавлена в стек: ${char}`)
-            };
-            previousChar = char;
         }
-    }
-
-    composeNumber(char) {
-        this.currentNumber += char // Строим число
-        console.log(`Текущее число: ${this.currentNumber}`);
-    } 
+        console.log(`Полученный результат ${numberStack}`);
+        return numberStack.pop();
+    
+}
 
 
-    addOperatorToStack(char) {
-        if (this.currentNumber) this.addNumberToStack();
-        this.processOperatorPrecedence(char);
-        this.stackOperators.push(char);
-    }
+    /**
+     * Форматирует результат вычисления.
+     *
+     * @param {number|string} result - Результат вычисления.
+     * @returns {number|string} Отформатированный результат вычисления.
+     *
+     * @description
+     * 1) Если результат не является числом, то возвращает его как есть.
+     * 2) Если результат является дробным числом, то результат округляется с точностью до 9 знаков.
+     * 3) Возвращает результат:
+     * - если его модуль более 1e+13, в виде числа с точностью до 13 знаков,
+     * - иначе в виде числа как есть.
+     */
+    
+    formatResult(result) {
 
-    manageBrackets(char) {
-        if (char === '(') this.stackOperators.push(char);  
-        else if (char === ')') {
-            if (this.currentNumber) this.addNumberToStack();
-            while (this.stackOperators.length && this.stackOperators.at(-1) !== '(') {
-                this.applyOperator();
-            };
-            this.stackOperators.pop();
+        if (!Number.isFinite(result)) return result;
+        if (!Number.isInteger(result)) {
+            result = result.toFixed(9);
         }
+        return (Math.abs(result) > 1e+13) ? parseFloat(result.toPrecision(13)) :
+                                            parseFloat(result);
     }
 
-
-    addNumberToStack() {
-        this.stackNumbers.push(parseFloat(this.currentNumber));
-        this.currentNumber = '';
-    }
-
-  
-    processOperatorPrecedence(operator) {
-        
-        const { stackOperators, validOperators } = this;
-        
-        const operatorPrecedence = validOperators[operator].precedence;
-        const isRightAssociative = validOperators[operator].associativity === 'right';
-
-        while (stackOperators.length) {
-            const lastOperator = stackOperators.at(-1);
-            if (!validOperators[lastOperator]) break;
-            const lastOperatorPrecedence = validOperators[lastOperator].precedence;
-            
-            const shouldApplyLastOperator = isRightAssociative ? lastOperatorPrecedence > operatorPrecedence
-                                                               : lastOperatorPrecedence >= operatorPrecedence;
-            
-            if (shouldApplyLastOperator) this.applyOperator()
-            else break;
-        }
-    }
-
-   /*  evaluateOperator(operator) {
-        
-        const { stackOperators, validOperators } = this;
-        while (stackOperators.length && validOperators[stackOperators.at(-1)] &&
-              (validOperators[stackOperators.at(-1)].precedence > validOperators[operator].precedence ||
-              (validOperators[stackOperators.at(-1)].precedence === validOperators[operator].precedence &&
-              validOperators[operator].associativity === 'left'))) {
-            this.applyOperator();
-        }
-    }; */
-
-// Функция сортировочной станции ОПЗ (вычисления выражения оператором из стека операторов и добавления полученного числа в стек чисел)
-    applyOperator() {
-        const { stackOperators, stackNumbers } = this;
-
-        const currentOperator = stackOperators.pop();
-        const rightOperand = stackNumbers.pop();
-        const leftOperand = currentOperator !== '√' ? stackNumbers.pop() : null;
-        let result = this.performMath(currentOperator, leftOperand, rightOperand);
-
-        const ShouldKeepMinus = currentOperator === '^' &&
-                              stackOperators.at(-1) === '(' &&
-                              stackOperators.at(-2) !== '√' &&
-                              leftOperand < 0 &&
-                              rightOperand % 2 === 0;
-
-        if (ShouldKeepMinus) { result  = -result };
-        console.log(`Левый операнд: ${leftOperand}, Оператор: ${currentOperator}, Правый операнд: ${rightOperand}, Результат: ${result}`);
-        stackNumbers.push(result);
-    }
-
-// Функция для выполнения одной математической операции
-
+    /**
+     * Выполняет математическую операцию.
+     *
+     * @param {string} operator - Оператор.
+     * @param {number} a - Левый операнд.
+     * @param {number} b - Правый операнд.
+     * @returns {number} Результат математической операции.
+     *
+     * @description
+     * С помощью switch находит соответсвующую оператору математическую операцию и возвращает её результат.
+     */
     performMath(operator, a, b) {
+
+        const factorial = (n) => { 
+            if (!Number.isInteger(n) || n < 0) return NaN; 
+            else if (n > 2) return n * factorial(n - 1)
+            else return n;   
+        }
+        
         switch (operator) {
-            case '+': return a + b;
-            case '-': return a - b;
-            case '*': return a * b;
-            case '/': return b !== 0 ? a / b : NaN;
-            case '%': return a % b;
-            case '^': return Math.pow(a, b);
-            case '√': return Math.sqrt(b);
+            case '+':
+                return (a + b);
+            case '-':
+                return (a - b);
+            case '×':
+                return (a * b);
+            case '÷':
+                return b !== 0 ? (a / b) : NaN;
+            case '%':
+                return (a % b);
+            case '^':
+                return (Math.pow(a, b));
+            case '√':
+                return (Math.sqrt(b));
+            case '∛':
+                return (Math.cbrt(b));
+            case '!':
+                return factorial(b);
+            case 'lg':
+                return (Math.log10(b));
+            case 'ln':
+                return (Math.log(b));
+            case 'sin':
+                return this.isRadian ? (Math.sin(b)) : Math.sin(b * Math.PI / 180);
+            case 'cos':
+                return this.isRadian ? (Math.cos(b)) : Math.cos(b * Math.PI / 180);
+            case 'tan':
+                return this.isRadian ? (Math.tan(b)) : Math.tan(b * Math.PI / 180);
+            case 'cot':
+                return this.isRadian ? (1 / (Math.tan(b))) : (1 / Math.tan(b * Math.PI / 180));
+        
             default: return b;
         }
     }

@@ -5,15 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор</title>
     <link rel="stylesheet" href="./styles/style.css">
+    <script type="module" src="scripts/index.js" defer></script>
   </head>
   <body>
     <header>
-      <!-- <h1>Soon...</h1> -->
       <p></p>
       <nav>
         <ul>
-          <!-- <li><a href="index.html">Главная</a></li> -->
-          <!-- <li><a href="catalog.html">Другая страница</a></li> -->
         </ul>
       </nav>
     </header>
@@ -24,14 +22,14 @@
             <h2>Калькулятор</h2>
             <img class="calculate-icon" src="images/calculate-icon.svg " alt="calculator icon">
           </div>
-          <div class ="display"></div>
+          <div class ="display" title="Клик по дисплею включает набор с клавиатуры"></div>
           <div class="calculator-buttons">
-            <div class="left">
+            <div class="left-panel">
                 <div class="row">
                     <div class="calc-button left-button topButtons">C</div>
                     <div class="calc-button left-button topButtons">Del</div>
-                    <div class="calc-button left-button topButtons">π</div> 
-                    <div class="calc-button left-button topButtons">e</div>
+                    <div class="calc-button left-button topButtons">(</div> 
+                    <div class="calc-button left-button topButtons">)</div>
                 </div>
                 <div class="row">
                     <div class="calc-button left-button">7</div>
@@ -53,28 +51,42 @@
                     <div class="calc-button left-button">.</div>
                 </div>
             </div>
+            <div class="right-panel">
             <div class="column">
-                <div class="calc-button side-Button">+</div>
-                <div class="calc-button side-Button">-</div>
-                <div class="calc-button side-Button">*</div>
-                <div class="calc-button side-Button">(</div>
-                <div class="calc-button side-Button">=</div>
+              <div class="calc-button side-Button">sin</div>
+              <div class="calc-button side-Button" id = "radian-degree-btn">rad</div>
+              <div class="calc-button side-Button">×</div>
+              <div class="calc-button side-Button">+</div>
+              <div class="calc-button side-Button">=</div>
             </div>
             <div class="column">
+              <div class="calc-button side-Button">cos</div>
+              <div class="calc-button side-Button">ln</div>
+              <div class="calc-button side-Button">÷</div> 
+              <div class="calc-button side-Button">-</div>      
+              <div class="calc-button side-Button">±</div> 
+            </div>
+            <div class="column">
+              <div class="calc-button side-Button">tan</div>
+              <div class="calc-button side-Button">lg</div>
               <div class="calc-button side-Button">^</div>
+              <div class="calc-button side-Button">!</div>
+              <div class="calc-button side-Button">e</div>
+            </div>
+            <div class="column">
+              <div class="calc-button side-Button">cot</div>
+              <div class="calc-button side-Button">%</div>
               <div class="calc-button side-Button">√</div>
-              <div class="calc-button side-Button">/</div> 
-              <div class="calc-button side-Button">)</div>      
-              <div class="calc-button side-Button">%</div> 
+              <div class="calc-button side-Button">∛</div>
+              <div class="calc-button side-Button">π</div>
+            </div>
+            </div>
           </div>
-        </div>
         </section>
         <section></section>
       </article>
     </main>
     <footer>
-
     </footer>
-    <script type="module" src="scripts/main.js" defer></script>
   </body>
 </html>
